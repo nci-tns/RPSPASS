@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+    <link rel="stylesheet" href="css/loading_normalize.css">
+    <link rel="stylesheet" href="css/loading_main.css">
+    <script src="javascript/modernizr-2.6.2.min.js"></script>
+
+    <script type="text/javascript">
+
+
+        function setup(htmlComponent) {
+            console.log("Setup called:", htmlComponent);
+
+            // Get the initial 'Data' value from MATLAB
+
+            var initialData = htmlComponent.Data;
+            console.log("Initial MATLAB Data", initialData);
+
+            // Initialize your HTML or JavaScript here
+            // Update things like DOM elements or JavaScript widgets
+
+            var dom = document.getElementById("Content");
+            dom.textContent = initialData;
+
+            // Code response to data changes in MATLAB
+
+            htmlComponent.addEventListener("DataChanged", function (event) {
+                var changedData = htmlComponent.Data;
+                console.log("New Data from MATLAB", changedData);
+
+                // Update your HTML or JavaScript with the new data
+                var dom = document.getElementById("Content");
+                dom.textContent = changedData;
+
+            });
+        }
+
+    </script>
+
+
+</head>
+
+<body>
+
+    <div id="loader-wrapper">
+        <div id="loader"></div>
+
+        <div class="loader-section section-left"></div>
+        <div class="loader-section section-right"></div>
+
+        <div style="font-family:sans-serif;color: black; position:absolute;  
+        width:100%; height: 100%; text-align: center;z-index: 10000;
+        display:inline-block;top: 48%;">
+
+            <div id="Content"></div>
+        </div>
+    </div>
+
+
+    <script src="" async defer></script>
+
+</body>
+
+</html>
