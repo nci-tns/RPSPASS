@@ -30,7 +30,7 @@ end
 % if update is required
 if strcmp(status,'update')
     title = 'Software Update';
-    message = ['There is a new version of FCMPASS (v', Response.version, '). Would you like to download now?'];
+    message = ['There is a new version of RPSPASS (v', Response.version, '). Would you like to download now?'];
     app.WriteUIAlerts2ErrorLog(title, message)
     selection = uiconfirm(app.StartMenu, message, title, 'Options', {'Ok','Later'}, 'Icon','warning');
 

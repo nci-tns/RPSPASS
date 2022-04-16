@@ -1,4 +1,4 @@
-function [status, message]=ImportFiles(app)
+function [status, message]=ImportFiles(app, filepath)
 
 % create default output variables
 status = true;
@@ -7,10 +7,6 @@ FailedFiles = [];
 
 timestamp = datestr(datetime('now'), 'yyyy-mm-dd HH:MM:SS');
 timestamp_filename = replace(timestamp, ':', '-');
-
-% get file directory
-% filepath = testDataset(); % for testing
-filepath = uigetdir;
 
 % get output preferences
 outputPref.mat = getprefRPSPASS('RPSPASS','matfile');
