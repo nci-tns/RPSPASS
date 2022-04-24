@@ -21,12 +21,13 @@
 			// 		$('#login-form').find('input[name="beadconc"]').val()]
 			// });
 			document.getElementById("login-submit").addEventListener("click", function (event) {
-			
+
 				let SpikeInUsed = $('#login-form').find('select[name="spikein-used"]').val()
 				let SpikeInDiam = $('#login-form').find('input[name="beaddiam"]').val()
 				let SpikeInConc = $('#login-form').find('input[name="beadconc"]').val()
+				let Response = "Submit";
 
-				if (SpikeInDiam == "" ) {
+				if (SpikeInDiam == "") {
 					SpikeInDiam = NaN;
 				}
 
@@ -34,7 +35,12 @@
 					SpikeInConc = NaN;
 				}
 
-				let OutputData = '{"Response" : "Submit"' +
+				if (document.getElementById("SoftwareMode").checked == true) {
+					Response = "Live"
+				}
+
+
+				let OutputData = '{"Response" : "' + Response + '"' +
 					', "spikein-used": "' + SpikeInUsed + '"' +
 					', "beaddiam":' + SpikeInDiam +
 					', "beadconc":' + SpikeInConc +
@@ -53,19 +59,37 @@
 <body>
 	<div class="container" style="margin-top: 20px;">
 		<div class="row">
+
+
+
 			<div class="col-md-6 col-md-offset-3">
 				<div class="panel panel-login">
 
 					<div class="panel-heading">
 						<div class="col-xs-12" style="margin-bottom: 10px;">
 							<img src="Images/RPS Logo.jpg" alt="RPSPASS Logo"
-								style="width: 150px; align-content: center; text-align: center;">
+								style="width: 100px; align-content: center; text-align: center;">
 						</div>
 						<hr>
 					</div>
 
 					<div class="panel-body">
 						<div class="row">
+							<div class="col-md-6 col-md-offset-3">
+								<div id="div-yesnotoggle">
+									<div id="div-left-text">Analysis</div>
+									<div id="div-switch">
+										<label class="switch">
+											<input type="checkbox" id="SoftwareMode">
+											<div class="slider round"></div>
+										</label>
+									</div>
+									<div id="div-right-text">
+										Acquisition
+									</div>
+								</div>
+							</div>
+
 							<div class="col-lg-12">
 								<form id="login-form" action="#" method="post" role="form" style="display: block;">
 									<p>Did you use a spike-in bead?</p>
@@ -111,6 +135,46 @@
 	</div>
 	<script type="text/javascript">
 
+		document.getElementById("SoftwareMode").addEventListener("click", function (event) {
+
+
+			if (document.getElementById("SoftwareMode").checked == true) {
+				document.getElementById('login-submit').disabled = false;
+
+				document.getElementById("beaddiam").value = null;
+				$('#beaddiam').attr('disabled', 'disabled');
+				document.getElementById("beadconc").value = null;
+				$('#beadconc').attr('disabled', 'disabled');
+				$('#spikein-used').attr('disabled', 'disabled');
+
+				document.getElementById("login-submit").innerText = "Select Directory"
+
+			} else {
+
+
+				switch (document.getElementById("spikein-used").value) {
+					case 'No':
+						document.getElementById("beaddiam").value = null;
+						$('#beaddiam').attr('disabled', 'disabled');
+						document.getElementById("beadconc").value = null;
+						$('#beadconc').attr('disabled', 'disabled');
+						$('#spikein-used').removeAttr('disabled');
+
+						document.getElementById('login-submit').disabled = false;
+
+						break;
+					case 'Yes':
+						$('#beaddiam').removeAttr('disabled');
+						$('#beadconc').removeAttr('disabled');
+						$('#spikein-used').removeAttr('disabled');
+						document.getElementById('login-submit').disabled = true;
+						break;
+				}
+
+				document.getElementById("login-submit").innerText = "Import Files"
+			}
+
+		})
 
 		// deactivate numeric input for bead diameter if spike in beads were not used
 		document.getElementById("login-form").addEventListener("input", function (event) {
@@ -167,6 +231,9 @@
 					break;
 			}
 		}
+
+
+
 	</script>
 </body>
 

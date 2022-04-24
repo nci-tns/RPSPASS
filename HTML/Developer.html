@@ -15,6 +15,13 @@
 
 function setup(htmlComponent) {
 
+	document.getElementById("reset-submit").addEventListener("click", function (event) {
+	
+	let OutputData = '{"Response" : "Reset"' +
+		'}'
+
+	htmlComponent.Data = OutputData
+});
 			document.getElementById("login-submit").addEventListener("click", function (event) {
 	
 				let OutputData = '{"Response" : "Submit"' +
@@ -51,12 +58,19 @@ function setup(htmlComponent) {
 							
 
 									<div class="form-group">
-										<div class="row" style="margin-top:180px">
+										<div class="row">
 											<div class="col-sm-6 col-sm-offset-3">
+												<button type="button" name="login-submit" id="reset-submit" tabindex="4"
+													class="form-control btn btn-login">Reset Test Directory</button>
+											</div>
+
+											<div class="col-sm-6 col-sm-offset-3" style="margin-top:2%">
 												<button type="button" name="login-submit" id="login-submit" tabindex="4"
 													class="form-control btn btn-login">Run Test Directory</button>
 											</div>
 										</div>
+
+
 									</div>
 
 								</form>

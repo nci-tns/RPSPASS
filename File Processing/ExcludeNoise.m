@@ -18,7 +18,8 @@ pop_stats = nan(numel(TTimeBins)-1, numel(options.thresholds)); % create empty a
 pop_dist = nan(numel(TTimeBins)-1, 1);  % create empty array
 for i = 1:numel(TTimeBins)-1
     ind = ttime>=TTimeBins(i) & ttime < TTimeBins(i+1);
-    pop_stats(i,:) = [prctile(diam(ind), options.thresholds)];
+%     pop_stats(i,:) = [prctile(diam(ind), options.thresholds)];
+    pop_stats(i,:) = [mean(diam(ind)), 3*std(diam(ind))];
     pop_dist(i) = std(diam(ind));
 end
 

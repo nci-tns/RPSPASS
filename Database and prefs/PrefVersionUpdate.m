@@ -10,7 +10,8 @@ Prefs = {...
     'prefpath',  prefpath;...       % filepath to preferences
     'dev_path',  '';...       % filepath to test files for development
     'dev_file_download','https://jones-lab-nanopass.s3.amazonaws.com/RPSPASS/Dev+Files/RPSPASS+Dev+Testing+Files.zip';... % public spectradyne testing files
-
+    'acquisition_dir','';... % live acquisition directory
+    'last_dir','';... % last working directory
 
     'Threshold_CalFactor', 5;...    % used for outlier removal,  calibration factor variation threshold
     'Threshold_Diam', 25;...        % used for outlier removal,  modal variation threshold

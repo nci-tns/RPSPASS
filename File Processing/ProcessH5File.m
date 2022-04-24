@@ -29,7 +29,6 @@ for i = 1:size(fnames,1)
         samprate = double(info.Attributes(strcmp({info.Attributes.Name}, 'n_samp')).Value);
         acqvol = double(info.Attributes(strcmp({info.Attributes.Name}, 'measured_volume')).Value);
         sfactInd = double(info.Attributes(strcmp({info.Attributes.Name}, 'diameterScalingFactor')).Value);
-        CalInt = double(info.Attributes(strcmp({info.Attributes.Name}, 'acqtime')).Value);
         data = h5read(CompFilename, '/pks');
     else
         % define index to find pertinent criteria for software function
@@ -37,7 +36,6 @@ for i = 1:size(fnames,1)
         samprate = double(info.Groups(1).Groups(i).Attributes(strcmp({info.Groups(1).Groups(i).Attributes.Name}, 'n_samp')).Value);
         acqvol = double(info.Groups(1).Groups(i).Attributes(strcmp({info.Groups(1).Groups(i).Attributes.Name}, 'measured_volume')).Value);
         sfactInd = double(info.Groups(1).Groups(i).Attributes(strcmp({info.Groups(1).Groups(i).Attributes.Name}, 'diameterScalingFactor')).Value);
-        CalInt = double(info.Groups(1).Groups(i).Attributes(strcmp({info.Groups(1).Groups(i).Attributes.Name}, 'acqtime')).Value);
         readstr = [fnames(i).Name,'/',fnames(i).Datasets(2).Name];
         data = h5read(fullfile(filepath, filenames), readstr);
     end
@@ -105,7 +103,7 @@ Data.Date =  Data.Info{strcmp(Data.Info(:,1),'stats_gen_date'),2};
 Data.RPSPASS.SpikeInUsed = app.SpikeInUsed; % was a spike in bead used?
 Data.RPSPASS.SpikeInDiam = app.SpikeInDiam; % what was the spike in diameter (if used)
 Data.RPSPASS.SpikeInConc = app.SpikeInConc; % what was the spike in diameter (if used)
-Data.RPSPASS.CalInt = CalInt;
+Data.RPSPASS.CalInt = timeind; % length of interval to calibrate over (seconds)
 Data.RPSPASS.MaxInt = ceil(max(Data.time)/Data.RPSPASS.CalInt); % number of intervals
 Data.RPSPASS.AcqInt = [0; cumsum(Data.acq_int)]; % cumulative sum of acquisition intervals
 Data.RPSPASS.CalMethod = getprefRPSPASS('RPSPASS','CalibrationMethod'); % calibration stat method
@@ -135,6 +133,10 @@ if Data.fail == true
 else
     Report(FileID,'Noise Removal') = {'Passed'};
 end
+
+% post gating outlier removal
+[Data] = PostGateOutlierRemoval(Data);
+
 
 % create normalize gate for removing spike-in bead and reporting statistics
 % based on spike-in exclusion
