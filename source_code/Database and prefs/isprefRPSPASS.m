@@ -8,7 +8,7 @@ if ismac()
 
 else
 
-    prefFile = ['C:\Users\', username, '\AppData\Roaming\rpspass\', PrefType, '_Pref.rpspass'];
+    prefFile = ['C:\Users\', username, '\AppData\Local\rpspass\', PrefType, '_Pref.rpspass'];
 
 end
 
