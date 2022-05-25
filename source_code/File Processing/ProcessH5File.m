@@ -134,9 +134,11 @@ else
     Report(FileID,'Noise Removal') = {'Passed'};
 end
 
-% post gating outlier removal
-[Data] = PostGateOutlierRemoval(Data);
-
+try % post gating outlier removal
+    [Data] = PostGateOutlierRemoval(Data);
+catch
+    Report(FileID,'Outlier Removal') = {'Failed'};
+end
 
 % create normalize gate for removing spike-in bead and reporting statistics
 % based on spike-in exclusion
