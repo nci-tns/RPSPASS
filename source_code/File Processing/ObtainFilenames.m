@@ -19,7 +19,7 @@ end
 
 function [Filenames, FileGroup, FileNo] = get_ss00(Filenames, filelocator)
 % get all statistics files using the '_ss00' file locator
-Filenames_ss = natsort({Filenames{contains(Filenames, filelocator)}}');
+Filenames_ss = {Filenames{contains(Filenames, filelocator)}}';
 Filenames_ss2 = cell(1,numel(Filenames_ss)); % create empty array
 StrInd = regexp(Filenames_ss, filelocator); % find the location of the filelocator in string
 
@@ -47,7 +47,7 @@ end
 
 function [Filenames, FileGroup, FileNo] = get_cc(Filenames, filelocator)
 
-Filenames = natsort({Filenames{contains(Filenames, filelocator)}});
+Filenames = {Filenames{contains(Filenames, filelocator)}};
 FileNo = numel(Filenames);
 FileGroup = [];
 

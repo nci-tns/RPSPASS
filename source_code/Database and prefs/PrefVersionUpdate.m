@@ -46,6 +46,11 @@ Prefs = {...
     'diamcalitypeNum',[];...                     % num of options for outlier selection in pref panel
     'diamcalitypeSelected','';...                % num of options for outlier selection in pref panel
 
+    'debugOptions',{'on','off'};...       % debug mode
+    'debugSelection', [true; false];...   % logic gate for debug selection in pref panel
+    'debugNum',[];...                     % num of options for debug selection in pref panel
+    'debugSelected','';...                % selecteddebug selection in pref panel
+
     'Response',''};                 % response to button pressing for communication between HTML & MATLAB
 
 for i = 1:size(Prefs,1)
@@ -92,6 +97,11 @@ for i = 1:size(Prefs,1)
         Options = getprefRPSPASS('RPSPASS','diamcalitypeOptions');
         Selection = getprefRPSPASS('RPSPASS','diamcalitypeSelection');
         setprefRPSPASS('RPSPASS','diamcalitypeSelected', Options{Selection})
+
+    elseif strcmp(Prefs{i,1},'debugSelected')
+        Options = getprefRPSPASS('RPSPASS','debugOptions');
+        Selection = getprefRPSPASS('RPSPASS','debugSelection');
+        setprefRPSPASS('RPSPASS','debugSelected', Options{Selection})
     end
 
 end

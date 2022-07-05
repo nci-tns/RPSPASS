@@ -10,6 +10,7 @@ if ~isempty(Diam_TimeGated)
     % incrementally bin data
     N = nan(1, numel(Increments));
     for i = 1:numel(Increments)
+        bincent(i) = Start + ((i+Data.RPSPASS.DiamGateWidth) - (i)/2);
         ind = Diam_TimeGated > Start+i & Diam_TimeGated < Start+i+Data.RPSPASS.DiamGateWidth;
         N(i) = sum(ind);
     end
@@ -20,12 +21,22 @@ if ~isempty(Diam_TimeGated)
     N(N<max(N*Data.RPSPASS.PeakThreshold )) = 0;
 
     % find peak and location of binned data
-    [pk,lk] = findpeaks(N,"MinPeakHeight",max(N)*Data.RPSPASS.PeakThreshold);
+    CountThreshold = max(N)*Data.RPSPASS.PeakThreshold;
+    [pk,lk] = findpeaks(N,"MinPeakHeight",CountThreshold);
 
     % obtain location of the largest bin and select the largest location if
     % there are multiple with same bin size
     pkPos = max(lk(pk == max(pk)));
     Data.SpikeInNum(acq_int,1) = max(pk);
+
+    % if debug mode is on, save variable for plotting outside loop
+    switch getprefRPSPASS('RPSPASS','debugSelected')
+        case 'on'
+            Data.Debug.PeakFind.bincent{acq_int} = bincent;
+            Data.Debug.PeakFind.M{acq_int} = M;
+            Data.Debug.PeakFind.lk{acq_int} = lk;
+            Data.Debug.PeakFind.CountThreshold{acq_int} = CountThreshold;
+    end
 
     if isempty(pkPos)
         CalFailure = true;

@@ -22,6 +22,7 @@ switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
                     else
                         [SpikeIn_data{i}, CalFailure, Data] = FindCalibrationPeak(Data, DiamCalData, i);
 
+ 
                         if numel(SpikeIn_data{i}) >= getprefRPSPASS('RPSPASS','DynamicCalSpikeInThresh') & CalFailure == false
 
                             [CalFactor, CalFailure, diam_norm] = getCaliFactor(app, Data, SpikeIn_data{i});
@@ -47,6 +48,12 @@ switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
 
             Data.diam(TimeGate) = DiamCalData * CalFactor;
             Data.CaliFactor = [Data.CaliFactor; CalFactor];
+        end
+
+        % if debug mode is on, save variable for plotting outside loop
+        switch getprefRPSPASS('RPSPASS','debugSelected')
+            case 'on'
+                Debug_Plots(Data, 'PeakFind',FileID)
         end
 
         % get the spike-in count for each acquisition

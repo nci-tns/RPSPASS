@@ -71,6 +71,12 @@
 									<option>off</option>
 								</select>
 
+								<p>Debug:</p>
+								<select class="form-group form-control form-control-lg dropdown" name="debug"
+									id="noiseremoval">
+									<option>on</option>
+									<option>off</option>
+								</select>
 							</div>
 						</div>
 
@@ -118,6 +124,9 @@
 				document.getElementById("noiseremoval").options[i].selected = initialData.noiseremovalSelection[i];
 			}
 
+			for (var i = 0; i < initialData.noiseremovalNum; i++) {
+				document.getElementById("debug").options[i].selected = initialData.noiseremovalSelection[i];
+			}
 			// upon click save overwrite the json array to send back to MATLAB
 			document.getElementById("login-submit").addEventListener("click", function (event) {
 
@@ -147,6 +156,12 @@
 				Selection = [];
 				for (var i = 0; i < initialData.noiseremovalNum; i++) {
 					Selection[i] = document.getElementById("noiseremoval").options[i].selected;
+				}
+				initialData.noiseremovalSelection = Selection;
+
+				Selection = [];
+				for (var i = 0; i < initialData.noiseremovalNum; i++) {
+					Selection[i] = document.getElementById("debug").options[i].selected;
 				}
 				initialData.noiseremovalSelection = Selection;
 

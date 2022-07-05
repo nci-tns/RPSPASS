@@ -5,14 +5,21 @@ status = true;
 message = '';
 FailedFiles = [];
 
+% create a timestamp for the analysis / output of files
 timestamp = datestr(datetime('now'), 'yyyy-mm-dd HH:MM:SS');
 timestamp_filename = replace(timestamp, ':', '-');
+
+% save path to output dir for subscripting functions
+setprefRPSPASS('RPSPASS','OutputDir',fullfile(filepath,['RPSPASS ', timestamp_filename]))
+
 
 % get output preferences
 outputPref.mat = getprefRPSPASS('RPSPASS','matfile');
 outputPref.fcs = getprefRPSPASS('RPSPASS','fcsfile');
 outputPref.csv = getprefRPSPASS('RPSPASS','csvfile');
 filelocator = getprefRPSPASS('RPSPASS','filelocatorSelected');
+
+
 
 % if the filepath exists
 if ~isequal(filepath,0)
@@ -34,6 +41,14 @@ if ~isequal(filepath,0)
     [Filenames, FileGroup, FileNo] = ObtainFilenames(Filenames, filelocator);
 
     if numel(Filenames) > 0
+
+
+        % if debug mode is turned on, create an output directory
+        switch getprefRPSPASS('RPSPASS','debugSelected')
+            case 'true'
+                mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'Debug'))
+        end
+
         % create output folder
         mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'Individual Gating'))
 
@@ -52,6 +67,10 @@ if ~isequal(filepath,0)
 
         %% process h5 files
         for i = 1:FileNo
+        % set current filename for exporting files in subscription
+        % finctionos
+        setprefRPSPASS('RPSPASS','CurrFile',Filenames{i})
+
 
             [app,Data, Report] = ProcessH5File(app, filepath,Filenames{i}, Report, i, FileGroup);
 
@@ -84,6 +103,11 @@ if ~isequal(filepath,0)
                 app.HTML.Data = [num2str(round(100*(i/(FileNo*2)),0)),'%'];
             else
                 FailedFiles = [FailedFiles, i];
+
+                % save failed QC h5 file data as temporary .mat file for further gating
+                % this will speed up analysis and save memory
+                filename = ['Data_',num2str(i),'.mat'];
+                preferenceFolder_saveTempDir(filename,Data)
             end
 
 
@@ -116,11 +140,12 @@ if ~isequal(filepath,0)
         end
 
         for i = 1:FileNo
+            % load file from temporary directory
+            filename = ['Data_',num2str(i),'.mat'];
+            Data = preferenceFolder_loadTempDir(filename);
 
             if ~sum(i == FailedFiles)
-                % load file from temporary directory
-                filename = ['Data_',num2str(i),'.mat'];
-                Data = preferenceFolder_loadTempDir(filename);
+
 
                 % check if sample failed calibration/outlier process and exclude
                 if Data.fail == true
@@ -185,11 +210,23 @@ if ~isequal(filepath,0)
 
                 % collate report information
                 [Report] = createReport(i, Report, Data, Gates);
+            else
+
+
+                % make failed output directories
+                mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'Individual Gating','Failed'))
+                mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'Cohort Gating','Failed'))
+
+                % output plots that failed QC for inspection
+                outputPath1 = fullfile(filepath,['RPSPASS ', timestamp_filename],'Individual Gating','Failed',[replace(Filenames{i},'.','-'),'_QC.jpeg']);
+                outputPath2 = fullfile(filepath,['RPSPASS ', timestamp_filename],'Cohort Gating','Failed',[replace(Filenames{i},'.','-'),'_QC.jpeg']);
+                plot_Failed_QC_data(app,Data,outputPath1, outputPath2)
+
             end
         end
 
         % export report
-        outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],'RPSPASS Report.xlsx');
+        outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],[timestamp_filename,'RPSPASS Report.xlsx']);
         writeReport(TableHeaders, Report, outputPath)
 
         % open folder containing outputs
@@ -200,7 +237,7 @@ if ~isequal(filepath,0)
         % clear temporary file cache
         preferenceFolder_createTempDir()
     else
-          status = false;
+        status = false;
     end
 
 else
