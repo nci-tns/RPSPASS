@@ -98,13 +98,12 @@ Data.moldID = Data.Info{strcmp(Data.Info(:,1),'moldID'),2};
 Data.BoxID =  Data.Info{strcmp(Data.Info(:,1),'cartridge_box_date'),2};
 Data.Date =  Data.Info{strcmp(Data.Info(:,1),'stats_gen_date'),2};
 
-
 % software settings
 Data.RPSPASS.SpikeInUsed = app.SpikeInUsed; % was a spike in bead used?
 Data.RPSPASS.SpikeInDiam = app.SpikeInDiam; % what was the spike in diameter (if used)
 Data.RPSPASS.SpikeInConc = app.SpikeInConc; % what was the spike in diameter (if used)
-Data.RPSPASS.CalInt = timeind; % length of interval to calibrate over (seconds)
-Data.RPSPASS.MaxInt = ceil(max(Data.time)/Data.RPSPASS.CalInt); % number of intervals
+Data.RPSPASS.CalInt = Data.acq_int; % length of interval to calibrate over (seconds)
+Data.RPSPASS.MaxInt = numel(cumsum(Data.acq_int)); % number of intervals
 Data.RPSPASS.AcqInt = [0; cumsum(Data.acq_int)]; % cumulative sum of acquisition intervals
 Data.RPSPASS.CalMethod = getprefRPSPASS('RPSPASS','CalibrationMethod'); % calibration stat method
 Data.RPSPASS.PeakThreshold = 0.3; % percentage threshold of max bin count to remove to find spike-in peak
@@ -112,6 +111,10 @@ Data.RPSPASS.DiamGateWidth = 10; % diameter window to perform peak find in nm
 Data.RPSPASS.MinSpikeInStart = 0.8; % minimum diameter to start search for spike in bead (percentage of true spike in diam)
 Data.RPSPASS.FailedAcq = false(1,Data.RPSPASS.MaxInt);
 Data.RPSPASS.FailedCriteria = cell(1, Data.RPSPASS.MaxInt);
+
+% if contains(getprefRPSPASS('RPSPASS','CurrFile'),'5.')
+%     x = 1;
+% end
 
 try % calibrate diameter
     [Data, Stat, Report] = DiamCalibration(app, Data, FileID, Report);

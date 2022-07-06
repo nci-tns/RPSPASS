@@ -67,16 +67,16 @@ if ~isequal(filepath,0)
 
         %% process h5 files
         for i = 1:FileNo
-        % set current filename for exporting files in subscription
-        % finctionos
-        setprefRPSPASS('RPSPASS','CurrFile',Filenames{i})
+            % set current filename for exporting files in subscription
+            % finctionos
+            setprefRPSPASS('RPSPASS','CurrFile',Filenames{i})
 
 
             [app,Data, Report] = ProcessH5File(app, filepath,Filenames{i}, Report, i, FileGroup);
 
-            if ~strcmp(Report{i,'Diameter Calibration'},'Failed') &&...
-                    ~strcmp(Report{i,'Outlier Removal'},'Failed') &&...
-                    ~strcmp(Report{i,'Noise Removal'},'Failed')
+            if ~strcmp(Report{i,'Diameter Calibration'},'Failed') &&... % if diameter calibration passed
+                    ~strcmp(Report{i,'Outlier Removal'},'Failed') &&... % if outlier removal passed
+                    ~strcmp(Report{i,'Noise Removal'},'Failed')         % of moise removal passed
 
                 % create output plots for file
                 outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],'Individual Gating',[replace(Filenames{i},'.','-'),'_QC.jpeg']);
@@ -109,6 +109,7 @@ if ~isequal(filepath,0)
                 filename = ['Data_',num2str(i),'.mat'];
                 preferenceFolder_saveTempDir(filename,Data)
             end
+
 
 
         end

@@ -36,6 +36,7 @@ if ~isempty(Diam_TimeGated)
             Data.Debug.PeakFind.M{acq_int} = M;
             Data.Debug.PeakFind.lk{acq_int} = lk;
             Data.Debug.PeakFind.CountThreshold{acq_int} = CountThreshold;
+            Data.Debug.PeakFind.SelectedPeak{acq_int} =  pkPos;
     end
 
     if isempty(pkPos)
