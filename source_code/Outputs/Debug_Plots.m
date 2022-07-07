@@ -43,7 +43,30 @@ if isfield(Data, 'Debug')
                 xlabel(t,'diameter [nm]')
                 ylabel(t,'count [nm]')
             end
+
+        case 'OutlierRemoval'
+            % check if debug data exists
+            if isfield(Data.Debug, 'PeakFind')
+                fig = figure('visible','off');
+                fig.Units = 'centimeters';
+                fig.Position = [0 0 21 29.7];
+                fig.PaperUnits = 'centimeters';
+                fig.PaperSize = [21 29.7];
+                fig.PaperUnits = 'normalized';
+                fig.PaperPosition = [0 0 1 1];
+
+                t = tiledlayout(3,1,'TileSpacing','compact','Padding','compact');
+                xData = cumsum(Data.acq_int);
+                yData = Data.Debug.OutlierRemoval.SI;
+                nexttile 
+                plot(xData, yData, 'o-','markerfacecolor','k','MarkerEdgeColor','none')
+                xlabel('Time (secs)')
+                ylabel('Interval Separation Index')
+%                 ylim([0 5])
+            end
     end
+
+
 end
 
 

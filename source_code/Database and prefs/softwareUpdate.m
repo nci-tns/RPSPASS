@@ -1,6 +1,7 @@
 function [] = softwareUpdate(app)
 
 % obtained current release of the software
+try
 software = jsondecode(webread('http://joshuawelsh.co.uk/softwareupdate'));
 
 ReleaseV = software.RPSPASS.version; % current software release
@@ -82,6 +83,11 @@ else % if software is the most up to date version
     message = 'Your software is up to date';
     uialert(app.RPSPASS, message, title,'Icon','success');
 
+end
+catch
+    title = 'Software Update';
+    message = 'Unable to check software update';
+    uialert(app.RPSPASS, message, title,'Icon','error');
 end
 
 end
