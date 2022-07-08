@@ -58,11 +58,23 @@ if isfield(Data, 'Debug')
                 t = tiledlayout(3,1,'TileSpacing','compact','Padding','compact');
                 xData = cumsum(Data.acq_int);
                 yData = Data.Debug.OutlierRemoval.SI;
+
                 nexttile 
                 plot(xData, yData, 'o-','markerfacecolor','k','MarkerEdgeColor','none')
                 xlabel('Time (secs)')
                 ylabel('Interval Separation Index')
 %                 ylim([0 5])
+
+                yData1 = Data.Debug.OutlierRemoval.Noise;
+                yData2 = Data.Debug.OutlierRemoval.SpikeIn;
+
+                nexttile 
+                plot(xData, yData1, '-k','markerfacecolor','none','linewidth',2)
+                hold on
+                plot(xData, yData2, '-b','markerfacecolor','none','linewidth',2)
+                xlabel('Time (secs)')
+                ylabel('Diameter')
+
             end
     end
 
