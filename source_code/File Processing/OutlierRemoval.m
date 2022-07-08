@@ -24,8 +24,8 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
             TimeGate = Data.time >= Data.RPSPASS.AcqInt(i) & Data.time < Data.RPSPASS.AcqInt(i+1);
             DiamCalData = Data.diam(TimeGate);
 
-            SpikeIn = DiamCalData(DiamCalData > Data.SpikeInGateMin(i) & DiamCalData < Data.SpikeInGateMax(i));
-            Noise = DiamCalData(DiamCalData < Data.SpikeInGateMin(i));
+            SpikeIn = DiamCalData(DiamCalData > Data.SpikeInGateMin(i)*Data.CaliFactor(i) & DiamCalData < Data.SpikeInGateMax(i)*Data.CaliFactor(i));
+            Noise = DiamCalData(DiamCalData < Data.SpikeInGateMin(i)*Data.CaliFactor(i));
 
             SI(i) = (prctile(SpikeIn,5) - prctile(Noise,5)) / (prctile(Noise,95));
             %             if Data.RPSPASS.CalInt > 0
