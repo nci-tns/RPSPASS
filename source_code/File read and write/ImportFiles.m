@@ -108,9 +108,8 @@ if ~isequal(filepath,0)
                 % this will speed up analysis and save memory
                 filename = ['Data_',num2str(i),'.mat'];
                 preferenceFolder_saveTempDir(filename,Data)
+                app.HTML.Data = [num2str(round(100*(i/(FileNo*2)),0)),'%'];
             end
-
-
 
         end
 

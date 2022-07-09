@@ -26,6 +26,10 @@ if strcmp(PrefObj.Response, 'Save')
             Selection = PrefObj.diamcalitypeSelection;
             setprefRPSPASS('RPSPASS','diamcalitypeSelected', Options{Selection})
 
+        elseif strcmp(fields{i},'debugSelected')
+            Options = PrefObj.debugOptions;
+            Selection = PrefObj.debugSelection;
+            setprefRPSPASS('RPSPASS','debugSelected', Options{Selection})
         else
             setprefRPSPASS('RPSPASS',fields{i}, PrefObj.(fields{i}))
         end
