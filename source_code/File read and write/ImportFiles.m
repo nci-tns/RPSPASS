@@ -71,7 +71,6 @@ if ~isequal(filepath,0)
             % finctionos
             setprefRPSPASS('RPSPASS','CurrFile',Filenames{i})
 
-
             [app,Data, Report] = ProcessH5File(app, filepath,Filenames{i}, Report, i, FileGroup);
 
             if ~strcmp(Report{i,'Diameter Calibration'},'Failed') &&... % if diameter calibration passed

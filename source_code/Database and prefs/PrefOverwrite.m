@@ -33,6 +33,7 @@ if strcmp(PrefObj.Response, 'Save')
         else
             setprefRPSPASS('RPSPASS',fields{i}, PrefObj.(fields{i}))
         end
+        
     end
     % reset the response preference
     setprefRPSPASS('RPSPASS','Response', '')

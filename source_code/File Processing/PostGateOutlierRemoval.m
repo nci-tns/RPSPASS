@@ -22,7 +22,7 @@ end
 Uq_AcqID = 1:Data.RPSPASS.MaxInt;
 
 % merge outliers with previous outlier removal arrays
-Data.RPSPASS.FailedAcq = or(Data.RPSPASS.FailedAcq, Conc_outlier);
+Data.RPSPASS.FailedAcq = or(Data.RPSPASS.FailedAcq(:), Conc_outlier(:));
 
 Failed_AcqIDs = Uq_AcqID(Data.RPSPASS.FailedAcq);
 

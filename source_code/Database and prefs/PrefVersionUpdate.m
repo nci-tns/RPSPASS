@@ -13,10 +13,8 @@ Prefs = {...
     'acquisition_dir','';... % live acquisition directory
     'last_dir','';... % last working directory
 
-    'Threshold_CalFactor', 5;...    % used for outlier removal,  calibration factor variation threshold
-    'Threshold_Diam', 25;...        % used for outlier removal,  modal variation threshold
-    'Threshold_Event', 99;...       % used for outlier removal,  event variation threshold
-    'Threshold_Ttime', 50;...       % used for outlier removal,  transit time variation threshold
+    'Threshold_SpikeIn_CV', 2;...    % range allowed from minimum CV (%)
+    'Threshold_SpikeIn_SI', 0.75;... % percentage of max SI to keep
 
     'CalibrationMethod', 'Kernel';...   % spike in bead fitting method
     'DynamicCalSpikeInThresh',10;...    % min spike-in events to perform dynamic calibration
@@ -73,6 +71,10 @@ for i = 1:size(Prefs,1)
     elseif strcmp(Prefs{i,1},'noiseremovalNum')
         N = numel(getprefRPSPASS('RPSPASS','noiseremovalOptions'));
         setprefRPSPASS('RPSPASS','noiseremovalNum', N)
+
+    elseif strcmp(Prefs{i,1},'debugNum')
+        N = numel(getprefRPSPASS('RPSPASS','debugOptions'));
+        setprefRPSPASS('RPSPASS','debugNum', N)
 
     elseif strcmp(Prefs{i,1},'diamcalitypeNum')
         N = numel(getprefRPSPASS('RPSPASS','diamcalitypeOptions'));

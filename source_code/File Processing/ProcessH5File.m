@@ -40,7 +40,6 @@ for i = 1:size(fnames,1)
         data = h5read(fullfile(filepath, filenames), readstr);
     end
 
-
     trans_t = data.pk_width;
     signois = data.pk_sn;
     sym = data.pk_sym;
