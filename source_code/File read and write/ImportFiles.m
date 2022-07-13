@@ -37,8 +37,7 @@ if ~isequal(filepath,0)
 
     % load .h5 combined files only
     SelectedFolderInfo = dir(fullfile(filepath,'*.h5'));
-    Filenames = {SelectedFolderInfo.name}';
-    [Filenames, FileGroup, FileNo] = ObtainFilenames(Filenames, filelocator);
+    [Filenames, FileGroup, FileNo] = ObtainFilenames(natsort({SelectedFolderInfo.name}'), filelocator);
 
     if numel(Filenames) > 0
 
@@ -54,7 +53,7 @@ if ~isequal(filepath,0)
 
         % create table for reporting
         TableHeaders = {'Filename', 'Sample Information','Sample Source','Sample Isolation','Sample Diluent','Spike-in information','Cartridge ID','Instrument Sheath Fluid',...
-            'Diameter Calibration', 'Outlier Removal', 'Noise Removal', 'Spike-in Removal', 'FCS Creation','MAT Creation','CSV Creation',...
+            'Diameter Calibration', 'Outlier Removal', 'Noise Removal', 'Spike-in Removal', 'FCS Creation','MAT Creation','CSV Creation','JSON Creation',...
             'Unprocessed Total Events','Unprocessed Total Volume (pL)','Unprocessed Total Conc (mL^-1)',...
             'IndGate Non-spike-in Events','IndGate Spike-in Events','IndGate Total Volume (pL)','IndGate Sample Conc (mL^-1)','IndGate Spike-In Conc (mL^1)','IndGate Diameter Gate (nm)','IndGate Transit Time Gate (µs)',...
             'CoGate Non-spike-in Events','CoGate Spike-in Events','CoGate Total Volume (pL)','CoGate Sample Conc (mL^-1)','CoGate Spike-In Conc (mL^1)','CoGate Diameter Gate (nm)','CoGate Transit Time Gate (µs)',...
@@ -113,8 +112,13 @@ if ~isequal(filepath,0)
         end
 
         % find a suitable gate for all data
-        Gates.diam = max(Gates.diam);
-        Gates.ttime = max(Gates.ttime);
+        if size(Gates.diam,1) == 1
+
+        else
+            Gates.diam = max(Gates.diam);
+            Gates.ttime = max(Gates.ttime);
+        end
+
         switch Data.RPSPASS.SpikeInUsed
             case 'Yes'
                 Gates.minSpike = min(Gates.minSpike);
@@ -136,6 +140,11 @@ if ~isequal(filepath,0)
         % create csv file output
         if outputPref.csv == 1
             mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'CSV Files'))
+        end
+
+        % create csv file output
+        if outputPref.csv == 1
+            mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'JSON Files'))
         end
 
         for i = 1:FileNo
@@ -204,11 +213,32 @@ if ~isequal(filepath,0)
                     Report(i,'CSV Creation') = {'Off'};
                 end
 
+                %% create .json filename
+                filename = fullfile(filepath,['RPSPASS ', timestamp_filename],'JSON Files',[replace(Filenames{i},'.','-'),'.json']);
+
+                % export .mat file data
+                if outputPref.mat == 1 % if turned on
+                    try
+                        jsondata = jsonencode(Data);
+                        fid = fopen(filename,'w');
+                        fprintf(fid,'%s',jsondata);
+                        fclose(fid);
+
+                        Report(i,'JSON Creation') = {'Successful'};
+                    catch
+                        Report(i,'JSON Creation') = {'Failed'};
+                    end
+                else % if turned on
+                    Report(i,'JSON Creation') = {'Off'};
+                end
+
                 % update html status
                 app.HTML.Data = [num2str(round(100*((i+FileNo)/(FileNo*2)),0)),'%'];
 
                 % collate report information
                 [Report] = createReport(i, Report, Data, Gates);
+
+
             else
 
 

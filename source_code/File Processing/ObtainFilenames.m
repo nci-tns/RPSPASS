@@ -33,7 +33,7 @@ for i = 1:numel(Filenames_ss)
 end
 
 % find the unique sample names
-Filenames = unique(Filenames_ss2);
+Filenames = natsort(unique(Filenames_ss2));
 
 % group each run for each sample
 FileGroup = cell(1,numel(Filenames));
@@ -47,7 +47,7 @@ end
 
 function [Filenames, FileGroup, FileNo] = get_cc(Filenames, filelocator)
 
-Filenames = {Filenames{contains(Filenames, filelocator)}};
+Filenames = natsort({Filenames{contains(Filenames, filelocator)}});
 FileNo = numel(Filenames);
 FileGroup = [];
 

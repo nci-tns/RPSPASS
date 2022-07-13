@@ -27,22 +27,23 @@ if ~isempty(Diam_TimeGated)
     % obtain location of the largest bin and select the largest location if
     % there are multiple with same bin size
     pkPos = max(lk(pk == max(pk)));
-    Data.SpikeInNum(acq_int,1) = max(pk);
 
-    % if debug mode is on, save variable for plotting outside loop
-    switch getprefRPSPASS('RPSPASS','debugSelected')
-        case 'on'
-            Data.Debug.PeakFind.bincent{acq_int} = bincent;
-            Data.Debug.PeakFind.M{acq_int} = M;
-            Data.Debug.PeakFind.lk{acq_int} = lk;
-            Data.Debug.PeakFind.CountThreshold{acq_int} = CountThreshold;
-            Data.Debug.PeakFind.SelectedPeak{acq_int} =  pkPos;
-    end
+    % save variable for plotting debug plots outside loop
+
+    Data.Debug.PeakFind.bincent{acq_int} = bincent;
+    Data.Debug.PeakFind.M{acq_int} = M;
+    Data.Debug.PeakFind.lk{acq_int} = lk;
+    Data.Debug.PeakFind.CountThreshold{acq_int} = CountThreshold;
 
     if isempty(pkPos)
         CalFailure = true;
         peakData = [];
+        Data.Debug.PeakFind.SelectedPeak{acq_int} =  [];
+
     else
+        Data.Debug.PeakFind.SelectedPeak{acq_int} =  pkPos;
+        Data.SpikeInNum(acq_int,1) = max(pk);
+
         % run up from maximum bin to see where it reaches a value of 0
         % indicating top edge of peak
         GateMax = pkPos;

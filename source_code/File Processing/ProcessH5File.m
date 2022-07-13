@@ -19,6 +19,7 @@ sy = [];
 acq_int = [];
 int_vol = [];
 raw_vol = [];
+pressures = [];
 
 for i = 1:size(fnames,1)
     if ~isempty(FileGroup)
@@ -29,6 +30,7 @@ for i = 1:size(fnames,1)
         samprate = double(info.Attributes(strcmp({info.Attributes.Name}, 'n_samp')).Value);
         acqvol = double(info.Attributes(strcmp({info.Attributes.Name}, 'measured_volume')).Value);
         sfactInd = double(info.Attributes(strcmp({info.Attributes.Name}, 'diameterScalingFactor')).Value);
+        setPs = double(info.Attributes(strcmp({info.Attributes.Name}, 'setPs')).Value);
         data = h5read(CompFilename, '/pks');
     else
         % define index to find pertinent criteria for software function
@@ -36,6 +38,7 @@ for i = 1:size(fnames,1)
         samprate = double(info.Groups(1).Groups(i).Attributes(strcmp({info.Groups(1).Groups(i).Attributes.Name}, 'n_samp')).Value);
         acqvol = double(info.Groups(1).Groups(i).Attributes(strcmp({info.Groups(1).Groups(i).Attributes.Name}, 'measured_volume')).Value);
         sfactInd = double(info.Groups(1).Groups(i).Attributes(strcmp({info.Groups(1).Groups(i).Attributes.Name}, 'diameterScalingFactor')).Value);
+        setPs = double(info.Groups(1).Groups(i).Attributes(strcmp({info.Groups(1).Groups(i).Attributes.Name}, 'setPs')).Value);
         readstr = [fnames(i).Name,'/',fnames(i).Datasets(2).Name];
         data = h5read(fullfile(filepath, filenames), readstr);
     end
@@ -66,6 +69,7 @@ for i = 1:size(fnames,1)
     sy = [sy; sym];
     acq_int = [acq_int; timeind];
     int_vol = [int_vol; acqvol];
+    pressures = [pressures; setPs(:)'];
 end
 
 % sample data
@@ -89,6 +93,7 @@ Data.CaliFactor = []; % deterimed calibration factor for each acquisition
 Data.SpikeInGateMax = []; % determined maximum diameter for spike-in gate
 Data.SpikeInGateMin = []; % determined minimum diameter for spike-in gate
 Data.UngatedTotalEvents = size(Data.AcqID,1); % total number of detected events before outlier removal
+Data.SetPs = pressures;
 
 % sample metadata
 cartstr = Data.Info{strcmp(Data.Info(:,1),'cartridge_class'),2};
@@ -115,18 +120,18 @@ Data.RPSPASS.FailedCriteria = cell(1, Data.RPSPASS.MaxInt);
 %     x = 1;
 % end
 
-try % calibrate diameter
+% try % calibrate diameter
     [Data, Stat, Report] = DiamCalibration(app, Data, FileID, Report);
-catch
-    Report(FileID,'Diameter Calibration') = {'Failed'};
-end
+% catch
+%     Report(FileID,'Diameter Calibration') = {'Failed'};
+% end
 
-try % remove outliers
+% try % remove outliers
     [Data] = OutlierRemoval(Data, Stat);
-    Report(FileID,'Outlier Removal') = {'Passed'};
-catch
-    Report(FileID,'Outlier Removal') = {'Failed'};
-end
+%     Report(FileID,'Outlier Removal') = {'Passed'};
+% catch
+%     Report(FileID,'Outlier Removal') = {'Failed'};
+% end
 
 % exclude noise from sample
 [Data.Ind_gate, Data.boundary, Data.reg, Data.fail] = ExcludeNoise(Data.ttime,Data.diam);
