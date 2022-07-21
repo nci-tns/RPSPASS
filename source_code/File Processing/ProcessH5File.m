@@ -80,6 +80,7 @@ else
 end
 Data.time = time; % Time (secs)
 Data.AcqID = AcqID; % Acquisition
+Data.AcqIDUq = unique(AcqID); % get unique acquisition IDS
 Data.non_norm_d = non_norm_d; % Uncalibrated Diameter (nm)
 Data.diam = nan(size(Data.non_norm_d,1),1);
 Data.acqvol = int_vol .* 1e9; % total volume of each acquisition (pL)
@@ -89,11 +90,12 @@ Data.signal2noise = sn; % Signal to noise ratio
 Data.symmetry = sy; % Pulse symmetry
 Data.outliers = false(size(Data.time,1),1); % default matrix for outlier removal
 Data.acq_int = acq_int; % acquisition time
-Data.CaliFactor = []; % deterimed calibration factor for each acquisition
-Data.SpikeInGateMax = []; % determined maximum diameter for spike-in gate
-Data.SpikeInGateMin = []; % determined minimum diameter for spike-in gate
+Data.CaliFactor = ones(numel(Data.acq_int),1); % deterimed calibration factor for each acquisition
+Data.SpikeInGateMax = nan(numel(Data.acq_int),1); % determined maximum diameter for spike-in gate
+Data.SpikeInGateMin = nan(numel(Data.acq_int),1); % determined minimum diameter for spike-in gate
 Data.UngatedTotalEvents = size(Data.AcqID,1); % total number of detected events before outlier removal
-Data.SetPs = pressures;
+Data.SetPs = pressures; % get input pressures for each acquisition P1 IN, P5 OUT, P3 IN, P2 OUT, P7 IN, and P6 OUT
+Data.EventID = 1:numel(AcqID); % create a unique ID for each event for downstream indexing
 
 % sample metadata
 cartstr = Data.Info{strcmp(Data.Info(:,1),'cartridge_class'),2};
@@ -126,12 +128,18 @@ Data.RPSPASS.FailedCriteria = cell(1, Data.RPSPASS.MaxInt);
 %     Report(FileID,'Diameter Calibration') = {'Failed'};
 % end
 
-% try % remove outliers
+switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
+    case 'on'
+        % try % remove outliers
     [Data] = OutlierRemoval(Data, Stat);
 %     Report(FileID,'Outlier Removal') = {'Passed'};
 % catch
 %     Report(FileID,'Outlier Removal') = {'Failed'};
 % end
+    otherwise
+    Report(FileID,'Outlier Removal') = {'Off'};
+end
+
 
 % exclude noise from sample
 [Data.Ind_gate, Data.boundary, Data.reg, Data.fail] = ExcludeNoise(Data.ttime,Data.diam);

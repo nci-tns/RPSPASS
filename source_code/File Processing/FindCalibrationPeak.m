@@ -76,7 +76,7 @@ if ~isempty(Diam_TimeGated)
         Data.SpikeInGateMin(acq_int,1) = Start + GateMin - Data.RPSPASS.DiamGateWidth;
 
         % create an index for diameter data representing the spike in bead
-        peakDataInd = Diam_TimeGated > Data.SpikeInGateMin(end) & Diam_TimeGated < Data.SpikeInGateMax(end);
+        peakDataInd = Diam_TimeGated > Data.SpikeInGateMin(acq_int) & Diam_TimeGated < Data.SpikeInGateMax(acq_int);
 
         % obtain data representing the spike in bead
         peakData = Diam_TimeGated(peakDataInd);
@@ -85,6 +85,7 @@ if ~isempty(Diam_TimeGated)
 else
     CalFailure = true;
     peakData = [];
+
 end
 
 end

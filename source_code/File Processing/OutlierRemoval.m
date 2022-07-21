@@ -1,88 +1,125 @@
 function [Data]=OutlierRemoval(Data,Stat)
 
+% create empty arrays to speed up for loop and avoid errors
+% downstream
 
-switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
+SI = nan(Data.RPSPASS.MaxInt,1);
+CVs = nan(Data.RPSPASS.MaxInt,1);
+NoiseEvents = nan(Data.RPSPASS.MaxInt,1);
+NoiseSpikeInRatio = nan(Data.RPSPASS.MaxInt,1);
 
-    case 'on'
+for i = 1:Data.RPSPASS.MaxInt
+    % isolate data for acquisition
+    timgate = Data.time >= Data.RPSPASS.AcqInt(i) & Data.time < Data.RPSPASS.AcqInt(i+1);
+    DiamCalData = Data.diam(timgate);
+    TransitTime = Data.ttime(timgate);
+    SpikeIn = DiamCalData(DiamCalData > Data.SpikeInGateMin(i)*Data.CaliFactor(i) & DiamCalData < Data.SpikeInGateMax(i)*Data.CaliFactor(i));
+    SpikeInTT(i) = median(TransitTime(DiamCalData > Data.SpikeInGateMin(i)*Data.CaliFactor(i) & DiamCalData < Data.SpikeInGateMax(i)*Data.CaliFactor(i)));
+    % Noise = DiamCalData(DiamCalData < Data.SpikeInGateMin(i)*Data.CaliFactor(i));
+    Noise = DiamCalData(Data.signal2noise(timgate) < 10);
 
-        % create empty arrays to speed up for loop and avoid errors
-        % downstream
+    SI(i) = (prctile(SpikeIn,5) - prctile(Noise,5)) / (prctile(Noise,95));
+    CVs(i) = 100*(std(SpikeIn)/mean(SpikeIn));
+    NoiseEvents(i) = numel(Noise);
+    NoiseSpikeInRatio(i) = numel(Noise) / numel(SpikeIn);
 
-        SI = nan(Data.RPSPASS.MaxInt,1);
-        CVs = nan(Data.RPSPASS.MaxInt,1);
-        NoiseEvents = nan(Data.RPSPASS.MaxInt,1);
-        NoiseSpikeInRatio = nan(Data.RPSPASS.MaxInt,1);
-
-        for i = 1:Data.RPSPASS.MaxInt
-            % isolate data for acquisition
-            timgate = Data.time >= Data.RPSPASS.AcqInt(i) & Data.time < Data.RPSPASS.AcqInt(i+1);
-            DiamCalData = Data.diam(timgate);
-            TransitTime = Data.ttime(timgate);
-            SpikeIn = DiamCalData(DiamCalData > Data.SpikeInGateMin(i)*Data.CaliFactor(i) & DiamCalData < Data.SpikeInGateMax(i)*Data.CaliFactor(i));
-            SpikeInTT(i) = median(TransitTime(DiamCalData > Data.SpikeInGateMin(i)*Data.CaliFactor(i) & DiamCalData < Data.SpikeInGateMax(i)*Data.CaliFactor(i)));
-            % Noise = DiamCalData(DiamCalData < Data.SpikeInGateMin(i)*Data.CaliFactor(i));
-            Noise = DiamCalData(Data.signal2noise(timgate) < 10);
-
-            SI(i) = (prctile(SpikeIn,5) - prctile(Noise,5)) / (prctile(Noise,95));
-            CVs(i) = 100*(std(SpikeIn)/mean(SpikeIn));
-            NoiseEvents(i) = numel(Noise);
-            NoiseSpikeInRatio(i) = numel(Noise) / numel(SpikeIn);
-            
-            % pass debug plotting information
-            Data.Debug.OutlierRemoval.Noise(i) = median(Noise);
-            Data.Debug.OutlierRemoval.SpikeIn(i) = median(SpikeIn);
-        end
-
-
-
-
-        % create logical index of outliers based on spike-in bead
-        % percentage CV
-
-        CV_sort = sort(CVs,'ascend');
-        CV_diff = CV_sort(1:end-1)./CV_sort(2:end);
-        CV_diff(CV_diff==0) = nan;
-        CV_min = CV_sort(find(CV_diff<=1.1,1,'first'));
-        CV_max = CV_min+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV');
-        CV_thresh = CVs>= CV_min & CVs<=CV_max;
-
-        % create logical index of outliers basedd on spike-in separation
-        % index from noise
-  
-        SI_mean = movmean(SI,5);
-        SI_diff = SI-SI_mean;
-        SI_thresh = SI_diff > -getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI') & SI_diff < getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI');
-
-        % combine logical outlier arrays
-        OutlierInd = and(SI_thresh(:), CV_thresh(:));
-        AcqIDind = unique(find(OutlierInd));
-
-        timgate = false(size(Data.AcqID));
-        for i = 1:numel(AcqIDind)
-            timgate = or(timgate, (Data.AcqID(:)==AcqIDind(i)));
-        end
-
-        % create outlier index
-        Data.outliers = ~timgate;
-        Data.RPSPASS.FailedAcq = ~OutlierInd;
-
-        % pass debug plotting information
-        Data.Debug.OutlierRemoval.SI = SI;
-        Data.Debug.OutlierRemoval.SI_thresh = SI_thresh;
-        Data.Debug.OutlierRemoval.CV = CVs;
-        Data.Debug.OutlierRemoval.CV_min = CV_min;
-        Data.Debug.OutlierRemoval.CV_max = CV_max;
-        Data.Debug.OutlierRemoval.CV_thresh = CV_thresh;
-        Data.Debug.OutlierRemoval.NoiseEvents = NoiseEvents;
-        Data.Debug.OutlierRemoval.NoiseSpikeInRatio = NoiseSpikeInRatio;
-        Data.Debug.OutlierRemoval.SpikeInTT = SpikeInTT;
-
-        Debug_Plots(Data, 'OutlierRemoval')
-
-    case 'off'
-
-
+    % pass debug plotting information
+    Data.Debug.OutlierRemoval.Noise(i) = median(Noise);
+    Data.Debug.OutlierRemoval.SpikeIn(i) = median(SpikeIn);
 end
+
+% get running pressures
+P1_Pressure(:) = Data.SetPs(:,1);
+P1_Pressure_Uq(:) = unique(P1_Pressure);
+BestIndex(:) = false(numel(Data.AcqIDUq),1);
+tic
+% cycle through each acquisition P1 pressure
+for i = 1:numel(P1_Pressure_Uq)
+    index.outliers(:) = Data.AcqIDUq;
+    index.pressure(:) =  P1_Pressure==P1_Pressure_Uq(i);
+    index.outliers(~index.pressure) = [];
+
+    % determine the range of transit times to cycle through
+    TT_iteration = floor(max(SpikeInTT(index.pressure))) : 0.1 : ceil(max(SpikeInTT(index.pressure)));
+
+    % cycle through each transit time gate
+    for ii = 1:numel(TT_iteration)
+
+        index.TT(:) = SpikeInTT(index.pressure) > TT_iteration(i) & SpikeInTT(index.pressure) < TT_iteration(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_TT');
+
+
+        index.Pres_TT(:) = and(index.pressure, index.TT);
+        %         index.outliers(~index.Pres_TT) = [];
+        CV_iteration = 0:0.1:ceil(max(CVs(index.Pres_TT)));
+
+        for iii = 1:numel(CV_iteration)
+            index.CV(:) = CVs(index.Pres_TT) > CV_iteration(iii) & CVs(index.Pres_TT) < CV_iteration(iii)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV');
+
+            index.Pres_TT_CV(:) = and(index.Pres_TT, index.CV);
+            %             index.outliers(~index.Pres_TT_CV) = [];
+
+            if sum(index.Pres_TT_CV) > sum(BestIndex)
+                index.outliers = index.Pres_TT_CV;
+            end
+
+            SI_iteration = 0:0.1:ceil(max(SI(index.Pres_TT_CV)));
+
+            %             for iv = 1:numel(SI_iteration)
+            %                 index.SI(:) = SI(index.Pres_TT_CV) > SI_iteration(iii) & SI(index.Pres_TT_CV) < SI_iteration(iii)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI');
+            %
+            %                 index.Pres_TT_CV_SI = and(index.Pres_TT_CV, index.SI);
+            % %                 index.outliers(~index.Pres_TT_CV_SI) = [];
+            %
+            %
+            %             end
+        end
+    end
+end
+toc
+
+
+% create logical index of outliers based on spike-in bead
+% percentage CV
+
+CV_sort = sort(CVs,'ascend');
+CV_diff = CV_sort(1:end-1)./CV_sort(2:end);
+CV_diff(CV_diff==0) = nan;
+CV_min = CV_sort(find(CV_diff<=1.1,1,'first'));
+CV_max = CV_min+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV');
+CV_thresh = CVs>= CV_min & CVs<=CV_max;
+
+% create logical index of outliers basedd on spike-in separation
+% index from noise
+
+SI_mean = movmean(SI,5);
+SI_diff = SI-SI_mean;
+SI_thresh = SI_diff > -getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI') & SI_diff < getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI');
+
+% combine logical outlier arrays
+OutlierInd = and(SI_thresh(:), CV_thresh(:));
+AcqIDind = unique(find(OutlierInd));
+
+timgate = false(size(Data.AcqID));
+for i = 1:numel(AcqIDind)
+    timgate = or(timgate, (Data.AcqID(:)==AcqIDind(i)));
+end
+
+% create outlier index
+Data.outliers = ~timgate;
+Data.RPSPASS.FailedAcq = ~OutlierInd;
+
+% pass debug plotting information
+Data.Debug.OutlierRemoval.SI = SI;
+Data.Debug.OutlierRemoval.SI_thresh = SI_thresh;
+Data.Debug.OutlierRemoval.CV = CVs;
+Data.Debug.OutlierRemoval.CV_min = CV_min;
+Data.Debug.OutlierRemoval.CV_max = CV_max;
+Data.Debug.OutlierRemoval.CV_thresh = CV_thresh;
+Data.Debug.OutlierRemoval.NoiseEvents = NoiseEvents;
+Data.Debug.OutlierRemoval.NoiseSpikeInRatio = NoiseSpikeInRatio;
+Data.Debug.OutlierRemoval.SpikeInTT = SpikeInTT;
+
+Debug_Plots(Data, 'OutlierRemoval')
 
 
 end
