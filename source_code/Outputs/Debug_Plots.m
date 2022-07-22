@@ -25,19 +25,24 @@ if isfield(Data, 'Debug')
                     nexttile
                     xData = Data.Debug.PeakFind.bincent{i};
                     yData = Data.Debug.PeakFind.M{i};
-                    PeakPos = Data.Debug.PeakFind.lk{i};
-                    Threshold = Data.Debug.PeakFind.CountThreshold{i};
-                    SelectPeak = Data.Debug.PeakFind.SelectedPeak{i};
 
-                    plot(xData, yData,'-k','linewidth',2)
-                    hold on
-                    plot(xData(PeakPos), yData(PeakPos),'ob','linewidth',2,'markerfacecolor','b','MarkerEdgeColor','none')
-                    plot(xData(SelectPeak), yData(SelectPeak),'or','linewidth',2,'markerfacecolor','r','MarkerEdgeColor','none')
-                    plot([min(xData) max(xData)], [Threshold Threshold],':r','linewidth',2)
+                    if ~isempty(xData) || ~isempty(yData)
+                        PeakPos = Data.Debug.PeakFind.lk{i};
+                        Threshold = Data.Debug.PeakFind.CountThreshold{i};
+                        SelectPeak = Data.Debug.PeakFind.SelectedPeak{i};
 
-                    xlim([min(xData) max(xData)])
-                    set(gca,'fontsize',14,'box','on','linewidth',2)
-                    xtickangle(90)
+                        plot(xData, yData,'-k','linewidth',2)
+                        hold on
+                        plot(xData(PeakPos), yData(PeakPos),'ob','linewidth',2,'markerfacecolor','b','MarkerEdgeColor','none')
+                        plot(xData(SelectPeak), yData(SelectPeak),'or','linewidth',2,'markerfacecolor','r','MarkerEdgeColor','none')
+                        plot([min(xData) max(xData)], [Threshold Threshold],':r','linewidth',2)
+
+                        xlim([min(xData) max(xData)])
+                        set(gca,'fontsize',14,'box','on','linewidth',2)
+                        xtickangle(90)
+                    else
+
+                    end
                 end
 
                 xlabel(t,'diameter [nm]')
@@ -71,69 +76,68 @@ if isfield(Data, 'Debug')
 
                 %% remove data based on separation index
                 nexttile
-                plot(xData, OutlierRemoval.SI, '-k')
-                hold on
-                plot(xData(~Best.index), OutlierRemoval.SI(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k')
-                plot(xData(Best.index), OutlierRemoval.SI(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none','Color','k')
-                fill([0 0 max(Bins.time) max(Bins.time)],[Best.SI(1) Best.SI(2) Best.SI(2) Best.SI(1)],'g','facealpha',0.1)
-                xlabel('Time (secs)')
-                ylabel('Interval Separation Index')
-                xlim([0 max(Bins.time)])
-                set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
+                plot(xData, OutlierRemoval.SI, '-k') % show raw data
+
+                if ~Best.num == 0
+                    hold on
+                    plot(xData(~Best.index), OutlierRemoval.SI(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k') % show outliers
+                    plot(xData(Best.index), OutlierRemoval.SI(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none','Color','k') % show kept events
+                    fill([0 0 max(Bins.time) max(Bins.time)],[min(Best.SI) max(Best.SI) max(Best.SI) min(Best.SI)],'g','facealpha',0.1) % show SI gate
+                end
+                formatPlot('Interval Separation Index',[])
 
 
                 %% remove data based on spike-in CV changes
                 nexttile
-                plot(xData, OutlierRemoval.CV, '-k')
-                hold on
-                plot(xData(~Best.index), OutlierRemoval.CV(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k')
-                plot(xData(Best.index), OutlierRemoval.CV(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none')
-                fill([0 0 max(Bins.time) max(Bins.time)],...
-                    [Best.CV(1) Best.CV(2) Best.CV(2) Best.CV(1)],...
-                    'g','facealpha',0.1)
+                plot(xData, OutlierRemoval.CV, '-k') % show raw data
 
-                xlim([0 max(Bins.time)])
-                xlabel('Time (secs)')
-                ylabel('% Spike-in % CV')
-                set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
+                if ~Best.num == 0
+                    hold on
+                    plot(xData(~Best.index), OutlierRemoval.CV(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k') % show outliers
+                    plot(xData(Best.index), OutlierRemoval.CV(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none') % show kept events
+                    fill([0 0 max(Bins.time) max(Bins.time)],[min(Best.CV) max(Best.CV) max(Best.CV) min(Best.CV)],'g','facealpha',0.1) % show SI gate
+                end
 
+                formatPlot('% Spike-in % CV',[])
+
+                %% remove data based on spike-in / noise ratio changes
+                nexttile
+                plot(xData, OutlierRemoval.NoiseSpikeInRatio, '-k') % show raw data
+
+                if ~Best.num == 0
+                    hold on
+                    plot(xData(~Best.index), OutlierRemoval.NoiseSpikeInRatio(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k') % show outliers
+                    plot(xData(Best.index), OutlierRemoval.NoiseSpikeInRatio(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none') % show kept events
+                end
+
+                formatPlot('Noise / Spike-in events',[])
+
+                %% remove data based on spike-in transit time changes
+                nexttile
+                plot(xData, OutlierRemoval.SpikeInTT, '-k') % show raw data
+
+                if ~Best.num == 0
+                    hold on
+                    plot(xData(~Best.index), OutlierRemoval.SpikeInTT(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k') % show outliers
+                    plot(xData(Best.index), OutlierRemoval.SpikeInTT(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none') % show kept events
+                    fill([0 0 max(Bins.time) max(Bins.time)],[min(Best.TT) max(Best.TT) max(Best.TT) min(Best.TT)],'g','facealpha',0.1) % show SI gate
+                end
+
+                formatPlot('Spike-in Transit Time (µs)',[])
+
+                %% remove data based on P1 set pressure changes
 
                 nexttile
-                plot(xData, OutlierRemoval.NoiseSpikeInRatio, '-k')
-                hold on
-                plot(xData(~Best.index), OutlierRemoval.NoiseSpikeInRatio(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k')
-                plot(xData(Best.index), OutlierRemoval.NoiseSpikeInRatio(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none')
-                set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
-                xlim([0 max(Bins.time)])
-                ylabel('Noise / Spike-in events')
-                xlabel('Time (secs)')
+                plot(xData, Data.SetPs(:,1), '-k') % show raw data
+                if ~Best.num == 0
+                    hold on
+                    plot(xData(~Best.index), Data.SetPs(~Best.index,1), 'o','markeredgecolor','r') % show outliers
+                    plot(xData(Best.index), Data.SetPs(Best.index,1), 'o','markeredgecolor','b')
+                end
 
-                nexttile
-                colororder({'k','k'})
-                plot(xData, OutlierRemoval.SpikeInTT, '-k')
-                hold on
-                plot(xData(~Best.index), OutlierRemoval.SpikeInTT(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k')
-                plot(xData(Best.index), OutlierRemoval.SpikeInTT(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none')
-                fill([0 0 max(Bins.time) max(Bins.time)],...
-                    [Best.TT(1) Best.TT(2) Best.TT(2) Best.TT(1)],...
-                    'g','facealpha',0.1)
+                formatPlot('P1 Pressure', [0 ceil(max(Data.SetPs(:,1)))])
 
-                xlabel('Time (secs)')
-                ylabel('Spike-in Transit Time (µs)')
-                xlim([0 max(Bins.time)])
-                set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
-
-                nexttile
-                plot(xData, Data.SetPs(:,1), '-k')
-                hold on
-                plot(xData(~Best.index), Data.SetPs(~Best.index,1), 'o','markeredgecolor','r')
-                plot(xData(Best.index), Data.SetPs(Best.index,1), 'o','markeredgecolor','b')
-                ylabel('P1 Pressure')
-                xlabel('Time (secs)')
-                xlim([0 max(Bins.time)])
-                ylim([0 ceil(max(Data.SetPs(:,1)))])
-                set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
-
+                %% show raw events with overlay of keep/remove gates
                 nexttile
                 histogram2(Data.time,Data.diam,'XBinEdges',Bins.time,"YBinEdges",Bins.diam,"DisplayStyle","tile")
                 hold on
@@ -144,16 +148,10 @@ if isfield(Data, 'Debug')
                         col = [0.5 0 0];
                     end
                     fill([Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i+1) Data.RPSPASS.AcqInt(i+1)],...
-                        [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam) ],...
-                        col, 'facealpha',0.2,'EdgeColor','none')
+                        [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam) ], col, 'facealpha',0.2,'EdgeColor','none')
                 end
 
-                set(gca,'GridLineStyle','none')
-                xlabel('Time (seconds)')
-                ylabel('RPS_{PASS} Diameter (nm)')
-                xlim([0 max(Bins.time)])
-                set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
-
+                formatPlot('RPS_{PASS} Diameter (nm)',[])
 
             end
     end
@@ -180,5 +178,18 @@ if exist('fig','var') == 1
     % close figure
     close(fig)
 end
+
+end
+
+function formatPlot(ylabel,ylims)
+xlabel('Time (seconds)')
+ylabel(ylabel)
+xlim([0 max(Bins.time)])
+if ~isempty(ylims)
+    ylim(ylims)
+end
+
+set(gca, 'fontsize',14, 'linewidth',2, 'box','on','GridLineStyle','none')
+
 
 end
