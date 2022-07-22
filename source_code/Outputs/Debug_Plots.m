@@ -49,6 +49,8 @@ if isfield(Data, 'Debug')
             if isfield(Data.Debug, 'OutlierRemoval')
 
                 OutlierRemoval = Data.Debug.OutlierRemoval;
+                Best = Data.Debug.OutlierRemoval.Best;
+
                 fig = figure('visible','off');
                 fig.Units = 'centimeters';
                 fig.Position = [0 0 21 29.7];
@@ -63,46 +65,31 @@ if isfield(Data, 'Debug')
                 Bins.diam = linspace(0,400,res);
                 Bins.ttime = linspace(0,100,res);
 
-                OutlierRemoval.NoiseSpikeInRatio(isinf(OutlierRemoval.NoiseSpikeInRatio)) = nan;
 
                 t = tiledlayout(3,2,'TileSpacing','compact','Padding','compact');
                 xData = cumsum(Data.acq_int) - (Data.acq_int/2);
 
                 %% remove data based on separation index
                 nexttile
-                plot(xData, OutlierRemoval.SI, 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k')
+                plot(xData, OutlierRemoval.SI, '-k')
                 hold on
-                plot(xData(OutlierRemoval.SI_thresh), OutlierRemoval.SI(OutlierRemoval.SI_thresh), 'o','markerfacecolor','b','MarkerEdgeColor','none')
-                plot(xData, movmean(OutlierRemoval.SI,5), '-k','linewidth',2)
-                %                 fill([0 0 max(Bins.time) max(Bins.time)],[max(yData)*Threshold.SI max(yData) max(yData) max(yData)*Threshold.SI],'g','facealpha',0.1)
-
+                plot(xData(~Best.index), OutlierRemoval.SI(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k')
+                plot(xData(Best.index), OutlierRemoval.SI(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none','Color','k')
+                fill([0 0 max(Bins.time) max(Bins.time)],[Best.SI(1) Best.SI(2) Best.SI(2) Best.SI(1)],'g','facealpha',0.1)
                 xlabel('Time (secs)')
                 ylabel('Interval Separation Index')
                 xlim([0 max(Bins.time)])
                 set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
 
 
-                NoiseDiam = sort(OutlierRemoval.Noise,'ascend');
-                NoiseDiamThresh = (1.1*mean(NoiseDiam(1:3)));
-                NoiseDiamInd = OutlierRemoval.Noise>NoiseDiamThresh;
-
-                nexttile
-                plot(xData, OutlierRemoval.Noise, '-k','markerfacecolor','none','linewidth',2)
-                hold on
-                plot(xData(NoiseDiamInd), OutlierRemoval.Noise(NoiseDiamInd), '.','markerfacecolor','r')
-                plot([0 max(Bins.time)],[NoiseDiamThresh NoiseDiamThresh],':r','linewidth',2)
-                xlabel('Time (secs)')
-                ylabel('Median Noise (nm)')
-                xlim([0 max(Bins.time)])
-                set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
-
                 %% remove data based on spike-in CV changes
                 nexttile
-                plot(xData, OutlierRemoval.CV, '-o','markerfacecolor','r','MarkerEdgeColor','none','Color','k')
+                plot(xData, OutlierRemoval.CV, '-k')
                 hold on
-                plot(xData(OutlierRemoval.CV_thresh), OutlierRemoval.CV(OutlierRemoval.CV_thresh), 'o','markerfacecolor','b','MarkerEdgeColor','none')
+                plot(xData(~Best.index), OutlierRemoval.CV(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k')
+                plot(xData(Best.index), OutlierRemoval.CV(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none')
                 fill([0 0 max(Bins.time) max(Bins.time)],...
-                    [OutlierRemoval.CV_min OutlierRemoval.CV_max OutlierRemoval.CV_max OutlierRemoval.CV_min ],...
+                    [Best.CV(1) Best.CV(2) Best.CV(2) Best.CV(1)],...
                     'g','facealpha',0.1)
 
                 xlim([0 max(Bins.time)])
@@ -110,41 +97,51 @@ if isfield(Data, 'Debug')
                 ylabel('% Spike-in % CV')
                 set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
 
-                nexttile
-                plot(xData, OutlierRemoval.NoiseSpikeInRatio, '-o','markerfacecolor','k','MarkerEdgeColor','none','Color','k')
-                hold on
-                plot(xData, movmean(OutlierRemoval.NoiseSpikeInRatio,5), '-r','Color','r','linewidth',2)
-                legend({'Raw Events','Moving Mean Events'},'location','northeast','box','off')
-                xlim([0 max(Bins.time)])
 
-                maxY = round(max([OutlierRemoval.NoiseSpikeInRatio]) / 0.8, -floor(log10(max([OutlierRemoval.NoiseSpikeInRatio]))));
-                minY = round(floor(min([OutlierRemoval.NoiseSpikeInRatio]) / 1.2), -floor(log10(min([OutlierRemoval.NoiseSpikeInRatio]))));
-                ylim([minY maxY])
-                xlabel('Time (secs)')
-                ylabel('Noise / Spike In Events')
+                nexttile
+                plot(xData, OutlierRemoval.NoiseSpikeInRatio, '-k')
+                hold on
+                plot(xData(~Best.index), OutlierRemoval.NoiseSpikeInRatio(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k')
+                plot(xData(Best.index), OutlierRemoval.NoiseSpikeInRatio(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none')
                 set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
+                xlim([0 max(Bins.time)])
+                ylabel('Noise / Spike-in events')
+                xlabel('Time (secs)')
 
                 nexttile
                 colororder({'k','k'})
-                yyaxis left
-                plot(xData, OutlierRemoval.SpikeInTT, '-ok','markerfacecolor','none','linewidth',2)
+                plot(xData, OutlierRemoval.SpikeInTT, '-k')
+                hold on
+                plot(xData(~Best.index), OutlierRemoval.SpikeInTT(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k')
+                plot(xData(Best.index), OutlierRemoval.SpikeInTT(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none')
+                fill([0 0 max(Bins.time) max(Bins.time)],...
+                    [Best.TT(1) Best.TT(2) Best.TT(2) Best.TT(1)],...
+                    'g','facealpha',0.1)
+
                 xlabel('Time (secs)')
                 ylabel('Spike-in Transit Time (µs)')
                 xlim([0 max(Bins.time)])
                 set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
-                yyaxis right
-                plot(xData, Data.SetPs(:,1), '-ob','markerfacecolor','none','linewidth',2)
-                ylabel('P1 Pressure')
 
+                nexttile
+                plot(xData, Data.SetPs(:,1), '-k')
+                hold on
+                plot(xData(~Best.index), Data.SetPs(~Best.index,1), 'o','markeredgecolor','r')
+                plot(xData(Best.index), Data.SetPs(Best.index,1), 'o','markeredgecolor','b')
+                ylabel('P1 Pressure')
+                xlabel('Time (secs)')
+                xlim([0 max(Bins.time)])
+                ylim([0 ceil(max(Data.SetPs(:,1)))])
+                set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
 
                 nexttile
                 histogram2(Data.time,Data.diam,'XBinEdges',Bins.time,"YBinEdges",Bins.diam,"DisplayStyle","tile")
                 hold on
                 for i = 1:Data.RPSPASS.MaxInt
-                    if Data.RPSPASS.FailedAcq(i) == 1
-                        col = [0.5 0 0];
-                    else
+                    if Best.index(i) == 1
                         col = [0 0.5 0];
+                    else
+                        col = [0.5 0 0];
                     end
                     fill([Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i+1) Data.RPSPASS.AcqInt(i+1)],...
                         [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam) ],...
@@ -156,7 +153,6 @@ if isfield(Data, 'Debug')
                 ylabel('RPS_{PASS} Diameter (nm)')
                 xlim([0 max(Bins.time)])
                 set(gca, 'fontsize',14, 'linewidth',2, 'box','on')
-
 
 
             end

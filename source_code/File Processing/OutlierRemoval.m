@@ -18,7 +18,7 @@ for i = 1:Data.RPSPASS.MaxInt
     % Noise = DiamCalData(DiamCalData < Data.SpikeInGateMin(i)*Data.CaliFactor(i));
     Noise = DiamCalData(Data.signal2noise(timgate) < 10);
 
-    SI(i) = (prctile(SpikeIn,5) - prctile(Noise,5)) / (prctile(Noise,95));
+    SI(i) = (prctile(SpikeIn,50) - prctile(Noise,50)) / (prctile(Noise,95));
     CVs(i) = 100*(std(SpikeIn)/mean(SpikeIn));
     NoiseEvents(i) = numel(Noise);
     NoiseSpikeInRatio(i) = numel(Noise) / numel(SpikeIn);
@@ -31,93 +31,93 @@ end
 % get running pressures
 P1_Pressure(:) = Data.SetPs(:,1);
 P1_Pressure_Uq(:) = unique(P1_Pressure);
-BestIndex(:) = false(numel(Data.AcqIDUq),1);
-tic
+
+% set default outlier gating
+Best.index(:) = false(numel(Data.AcqIDUq),1);
+Best.num = sum(Best.index);
+Best.Ps = [];
+Best.TT = [];
+Best.CV = [];
+Best.SI = [];
+
+index.pressure = [];
+index.TT = [];
+index.CV = [];
+index.SI = [];
+
 % cycle through each acquisition P1 pressure
 for i = 1:numel(P1_Pressure_Uq)
-    index.outliers(:) = Data.AcqIDUq;
-    index.pressure(:) =  P1_Pressure==P1_Pressure_Uq(i);
-    index.outliers(~index.pressure) = [];
+    index.pressure(:,i) = P1_Pressure==P1_Pressure_Uq(i);
+end
 
-    % determine the range of transit times to cycle through
-    TT_iteration = floor(max(SpikeInTT(index.pressure))) : 0.1 : ceil(max(SpikeInTT(index.pressure)));
+% cycle through each transit time gate
+iteration.TT = floor(min(SpikeInTT)) : 0.2 : ceil(max(SpikeInTT));
+for i = 1:numel(iteration.TT )
+    index.TT(:,i) = SpikeInTT > iteration.TT(i) & SpikeInTT < iteration.TT(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_TT');
+end
 
-    % cycle through each transit time gate
-    for ii = 1:numel(TT_iteration)
+iteration.CV = min(CVs):0.1:ceil(max(CVs));
+for i = 1:numel(iteration.CV)
+    index.CV(:,i) = CVs > iteration.CV(i) & CVs < iteration.CV(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV');
+end
 
-        index.TT(:) = SpikeInTT(index.pressure) > TT_iteration(i) & SpikeInTT(index.pressure) < TT_iteration(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_TT');
+iteration.SI = min(SI) : 0.1 : ceil(max(SI));
+for i = 1:numel(iteration.SI)
+    index.SI(:,i) = SI > iteration.SI(i) & SI < iteration.SI(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI');
+end
 
+Best.NoCombs = numel(P1_Pressure_Uq)*numel(iteration.TT)*numel(iteration.CV)*numel(iteration.SI);
 
-        index.Pres_TT(:) = and(index.pressure, index.TT);
-        %         index.outliers(~index.Pres_TT) = [];
-        CV_iteration = 0:0.1:ceil(max(CVs(index.Pres_TT)));
+for i = 1:numel(P1_Pressure_Uq)
+    thresh.pressure = sum([index.pressure(:,i)],2)==1;
+    if sum( thresh.pressure ) > 1
+        for ii = 1:numel(iteration.TT)
+            thresh.TT = sum([index.pressure(:,i) index.TT(:,ii)],2)==2;
+            if sum( thresh.TT ) > 1
+                for iii = 1:numel(iteration.CV)
+                    thresh.CV = sum([index.pressure(:,i) index.TT(:,ii) index.CV(:,iii)],2)==3;
+                    if sum( thresh.CV ) > 1
+                        for iv = 1:numel(iteration.SI)
+                            comp_index = sum([index.pressure(:,i) index.TT(:,ii) index.CV(:,iii) index.SI(:,iv)],2)==4;
 
-        for iii = 1:numel(CV_iteration)
-            index.CV(:) = CVs(index.Pres_TT) > CV_iteration(iii) & CVs(index.Pres_TT) < CV_iteration(iii)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV');
-
-            index.Pres_TT_CV(:) = and(index.Pres_TT, index.CV);
-            %             index.outliers(~index.Pres_TT_CV) = [];
-
-            if sum(index.Pres_TT_CV) > sum(BestIndex)
-                index.outliers = index.Pres_TT_CV;
+                            tot_events = sum(comp_index);
+                            if tot_events > Best.num
+                                Best.index = comp_index;
+                                Best.num = sum(Best.index);
+                                Best.Ps = P1_Pressure_Uq(i);
+                                Best.TT =  [iteration.TT(ii)  (iteration.TT(ii)   + getprefRPSPASS('RPSPASS','Threshold_SpikeIn_TT'))];
+                                Best.CV =  [iteration.CV(iii) (iteration.CV(iii)  + getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV'))];
+                                Best.SI =  [iteration.SI(iv)  (iteration.SI(iv)   + getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI'))];
+                            end
+                        end
+                    end
+                end
             end
-
-            SI_iteration = 0:0.1:ceil(max(SI(index.Pres_TT_CV)));
-
-            %             for iv = 1:numel(SI_iteration)
-            %                 index.SI(:) = SI(index.Pres_TT_CV) > SI_iteration(iii) & SI(index.Pres_TT_CV) < SI_iteration(iii)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI');
-            %
-            %                 index.Pres_TT_CV_SI = and(index.Pres_TT_CV, index.SI);
-            % %                 index.outliers(~index.Pres_TT_CV_SI) = [];
-            %
-            %
-            %             end
         end
     end
 end
-toc
 
+[~,NoiseSpikeInRatio_Outliers] = rmoutliers(NoiseSpikeInRatio,'median');
+Best.index = and(Best.index(:), ~NoiseSpikeInRatio_Outliers(:));
 
-% create logical index of outliers based on spike-in bead
-% percentage CV
+timegate = false(size(Data.AcqID));
+AcqIDind = unique(find(~Best.index));
 
-CV_sort = sort(CVs,'ascend');
-CV_diff = CV_sort(1:end-1)./CV_sort(2:end);
-CV_diff(CV_diff==0) = nan;
-CV_min = CV_sort(find(CV_diff<=1.1,1,'first'));
-CV_max = CV_min+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV');
-CV_thresh = CVs>= CV_min & CVs<=CV_max;
-
-% create logical index of outliers basedd on spike-in separation
-% index from noise
-
-SI_mean = movmean(SI,5);
-SI_diff = SI-SI_mean;
-SI_thresh = SI_diff > -getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI') & SI_diff < getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI');
-
-% combine logical outlier arrays
-OutlierInd = and(SI_thresh(:), CV_thresh(:));
-AcqIDind = unique(find(OutlierInd));
-
-timgate = false(size(Data.AcqID));
 for i = 1:numel(AcqIDind)
-    timgate = or(timgate, (Data.AcqID(:)==AcqIDind(i)));
+    timegate = or(timegate, (Data.AcqID(:)==AcqIDind(i)));
 end
 
-% create outlier index
-Data.outliers = ~timgate;
-Data.RPSPASS.FailedAcq = ~OutlierInd;
+Data.outliers = timegate;
+Data.RPSPASS.FailedAcq = ~Best.index;
 
 % pass debug plotting information
 Data.Debug.OutlierRemoval.SI = SI;
-Data.Debug.OutlierRemoval.SI_thresh = SI_thresh;
 Data.Debug.OutlierRemoval.CV = CVs;
-Data.Debug.OutlierRemoval.CV_min = CV_min;
-Data.Debug.OutlierRemoval.CV_max = CV_max;
-Data.Debug.OutlierRemoval.CV_thresh = CV_thresh;
 Data.Debug.OutlierRemoval.NoiseEvents = NoiseEvents;
 Data.Debug.OutlierRemoval.NoiseSpikeInRatio = NoiseSpikeInRatio;
+Data.Debug.OutlierRemoval.NoiseSpikeInRatio_Outliers = NoiseSpikeInRatio_Outliers;
 Data.Debug.OutlierRemoval.SpikeInTT = SpikeInTT;
+Data.Debug.OutlierRemoval.Best = Best;
 
 Debug_Plots(Data, 'OutlierRemoval')
 

@@ -47,7 +47,7 @@ switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
             Stat.Ttime(i) = mode(round(Data.ttime(TimeGate),0));
 
             Data.diam(TimeGate) = DiamCalData * CalFactor;
-            Data.CaliFactor = [Data.CaliFactor; CalFactor];
+            Data.CaliFactor(i) = CalFactor;
         end
 
         % if debug mode is on, save variable for plotting outside loop
