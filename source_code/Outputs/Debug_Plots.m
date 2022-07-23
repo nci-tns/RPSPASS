@@ -2,11 +2,8 @@ function []=Debug_Plots(Data, PlotType)
 
 % check debug field exists
 if isfield(Data, 'Debug')
-
     switch PlotType
-
         case 'PeakFind'
-
             % check if debug data exists
             if isfield(Data.Debug, 'PeakFind')
 
@@ -84,8 +81,8 @@ if isfield(Data, 'Debug')
                     plot(xData(Best.index), OutlierRemoval.SI(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none','Color','k') % show kept events
                     fill([0 0 max(Bins.time) max(Bins.time)],[min(Best.SI) max(Best.SI) max(Best.SI) min(Best.SI)],'g','facealpha',0.1) % show SI gate
                 end
-                formatPlot('Interval Separation Index',[])
 
+                formatPlot('Interval Separation Index',[])
 
                 %% remove data based on spike-in CV changes
                 nexttile
@@ -155,8 +152,6 @@ if isfield(Data, 'Debug')
 
             end
     end
-
-
 end
 
 % if figure exists

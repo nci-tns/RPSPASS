@@ -41,7 +41,6 @@ for i = 1:size(fnames,1)
         data = h5read(fullfile(filepath, filenames), readstr);
     end
 
-
     trans_t = data.pk_width;
     signois = data.pk_sn;
     sym = data.pk_sym;
@@ -87,10 +86,21 @@ Data.signal2noise = sn; % Signal to noise ratio
 Data.symmetry = sy; % Pulse symmetry
 Data.outliers = false(size(Data.time,1),1); % default matrix for outlier removal
 Data.acq_int = acq_int; % acquisition time
-Data.CaliFactor = []; % deterimed calibration factor for each acquisition
+Data.CaliFactor = ones(numel(Data.acq_int),1); % deterimed calibration factor for each acquisition
 Data.SpikeInGateMax = []; % determined maximum diameter for spike-in gate
 Data.SpikeInGateMin = []; % determined minimum diameter for spike-in gate
 Data.UngatedTotalEvents = size(Data.AcqID,1); % total number of detected events before outlier removal
+
+% software settings
+Data.RPSPASS.SpikeInUsed = app.SpikeInSwitch.Value; % was a spike in bead used?
+Data.RPSPASS.SpikeInDiam = app.SpikeinDiameternmEditField.Value; % what was the spike in diameter (if used)
+Data.RPSPASS.CalInt = Data.acq_int; % length of interval to calibrate over (seconds)
+Data.RPSPASS.MaxInt = numel(cumsum(Data.acq_int)); % number of intervals
+Data.RPSPASS.AcqInt = [0; cumsum(Data.acq_int)]; % cumulative sum of acquisition intervals
+Data.RPSPASS.CalMethod = getprefRPSPASS('RPSPASS','CalibrationMethod'); % calibration stat method
+Data.RPSPASS.PeakThreshold = 0.3; % percentage threshold of max bin count to remove to find spike-in peak
+Data.RPSPASS.DiamGateWidth = 10; % diameter window to perform peak find in nm
+Data.RPSPASS.MinSpikeInStart = 0.8; % minimum diameter to start search for spike in bead (percentage of true spike in diam)
 
 % sample metadata
 cartstr = Data.Info{strcmp(Data.Info(:,1),'cartridge_class'),2};
@@ -99,6 +109,24 @@ Data.moldID = Data.Info{strcmp(Data.Info(:,1),'moldID'),2};
 Data.BoxID =  Data.Info{strcmp(Data.Info(:,1),'cartridge_box_date'),2};
 Data.Date =  Data.Info{strcmp(Data.Info(:,1),'stats_gen_date'),2};
 
+[Data] = Live_DiamCalibration(app, Data);
 
+% process data for plotting
+switch Data.RPSPASS.SpikeInUsed
+    case 'On'
+        for i = 1:Data.RPSPASS.MaxInt
+            % isolate data for acquisition
+            timgate = Data.time >= Data.RPSPASS.AcqInt(i) & Data.time < Data.RPSPASS.AcqInt(i+1);
+            DiamCalData = Data.diam(timgate);
+            TransitTime = Data.ttime(timgate);
+            SpikeIn = DiamCalData(DiamCalData > Data.SpikeInGateMin(i)*Data.CaliFactor(i) & DiamCalData < Data.SpikeInGateMax(i)*Data.CaliFactor(i));
+            Data.SpikeInTT(i) = median(TransitTime(DiamCalData > Data.SpikeInGateMin(i)*Data.CaliFactor(i) & DiamCalData < Data.SpikeInGateMax(i)*Data.CaliFactor(i)));
+            % Noise = DiamCalData(DiamCalData < Data.SpikeInGateMin(i)*Data.CaliFactor(i));
+            Noise = DiamCalData(Data.signal2noise(timgate) < 10);
+
+            Data.SI(i) = (prctile(SpikeIn,50) - prctile(Noise,50)) / (prctile(Noise,95));
+            Data.CV(i) = 100*(std(SpikeIn)/mean(SpikeIn));
+        end
+end
 
 end
