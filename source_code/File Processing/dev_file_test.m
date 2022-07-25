@@ -1,29 +1,45 @@
 function [status]=dev_file_test(app)
 
+% get directory path
 test_path = getprefRPSPASS('RPSPASS','dev_path');
 
+% check path still exists
 if isfolder(test_path)
+
+    % get all directories and unique terminal folders
     filestruct = dir(fullfile(test_path,'**/*.h5'));
     Sets = unique({filestruct.folder});
+    SetNo = numel(Sets);
+    % cycle through each folder to process data
+    for i = 1:SetNo
 
-    for i = 1:numel(Sets)
-
+        % split path into individual folders to extract spike-in use,
+        % diameter, and concentration for processing
         if ismac()
             filep = strsplit(Sets{1},'/');
         elseif ispc()
              filep = strsplit(Sets{1},'\');
         end
 
-        if str2num(filep{end-1}) == 0
+        % get folder name that dictates spike-in concentration
+        concStr = str2num(filep{end-1});
+        
+        if ~isempty(concStr) || concStr ~= 0
+            app.SpikeInConc = concStr;
+        else
+            app.SpikeInConc = [];
+        end
+       
+        SpikeInStr = str2num(filep{end-2});
+
+        if SpikeInStr == 0
             app.SpikeInUsed = 'No';
         else
             app.SpikeInUsed = 'Yes';
-            app.SpikeInDiam = str2num(filep{end-1});
-
+            app.SpikeInDiam = SpikeInStr;
         end
-        app.SpikeInConc = [];
-
-        [status, message]=ImportFiles(app, Sets{i});
+        
+        [status, message]=ImportFiles(app, Sets{i},[i SetNo]);
     end
 
 

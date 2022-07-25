@@ -82,7 +82,7 @@ if isfield(Data, 'Debug')
                     fill([0 0 max(Bins.time) max(Bins.time)],[min(Best.SI) max(Best.SI) max(Best.SI) min(Best.SI)],'g','facealpha',0.1) % show SI gate
                 end
 
-                formatPlot('Interval Separation Index',[])
+                formatPlot('Interval Separation Index',[], Bins)
 
                 %% remove data based on spike-in CV changes
                 nexttile
@@ -95,7 +95,7 @@ if isfield(Data, 'Debug')
                     fill([0 0 max(Bins.time) max(Bins.time)],[min(Best.CV) max(Best.CV) max(Best.CV) min(Best.CV)],'g','facealpha',0.1) % show SI gate
                 end
 
-                formatPlot('% Spike-in % CV',[])
+                formatPlot('% Spike-in % CV',[],Bins)
 
                 %% remove data based on spike-in / noise ratio changes
                 nexttile
@@ -107,7 +107,7 @@ if isfield(Data, 'Debug')
                     plot(xData(Best.index), OutlierRemoval.NoiseSpikeInRatio(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none') % show kept events
                 end
 
-                formatPlot('Noise / Spike-in events',[])
+                formatPlot('Noise / Spike-in events',[], Bins)
 
                 %% remove data based on spike-in transit time changes
                 nexttile
@@ -120,7 +120,7 @@ if isfield(Data, 'Debug')
                     fill([0 0 max(Bins.time) max(Bins.time)],[min(Best.TT) max(Best.TT) max(Best.TT) min(Best.TT)],'g','facealpha',0.1) % show SI gate
                 end
 
-                formatPlot('Spike-in Transit Time (µs)',[])
+                formatPlot('Spike-in Transit Time (µs)',[], Bins)
 
                 %% remove data based on P1 set pressure changes
 
@@ -132,7 +132,7 @@ if isfield(Data, 'Debug')
                     plot(xData(Best.index), Data.SetPs(Best.index,1), 'o','markeredgecolor','b')
                 end
 
-                formatPlot('P1 Pressure', [0 ceil(max(Data.SetPs(:,1)))])
+                formatPlot('P1 Pressure', [0 ceil(max(Data.SetPs(:,1)))], Bins)
 
                 %% show raw events with overlay of keep/remove gates
                 nexttile
@@ -148,7 +148,7 @@ if isfield(Data, 'Debug')
                         [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam) ], col, 'facealpha',0.2,'EdgeColor','none')
                 end
 
-                formatPlot('RPS_{PASS} Diameter (nm)',[])
+                formatPlot('RPS_{PASS} Diameter (nm)',[],Bins)
 
             end
     end
@@ -176,9 +176,9 @@ end
 
 end
 
-function formatPlot(ylabel,ylims)
+function formatPlot(ylabelStr,ylims, Bins)
 xlabel('Time (seconds)')
-ylabel(ylabel)
+ylabel(ylabelStr)
 xlim([0 max(Bins.time)])
 if ~isempty(ylims)
     ylim(ylims)

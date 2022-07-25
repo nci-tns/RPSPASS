@@ -1,4 +1,4 @@
-function [status, message]=ImportFiles(app, filepath)
+function [status, message]=ImportFiles(app, filepath, mode)
 
 % create default output variables
 status = true;
@@ -24,11 +24,19 @@ filelocator = getprefRPSPASS('RPSPASS','filelocatorSelected');
 % if the filepath exists
 if ~isequal(filepath,0)
 
-    % switch to loading screen
-    app.HTML.HTMLSource = 'Loading_Screen.html';
-    app.HTML.Data = '0%';
-    pause(0.5);
-
+    if isempty(mode)
+        % switch to loading screen
+        app.HTML.HTMLSource = 'Loading_Screen.html';
+        app.HTML.Data = '0%';
+        pause(0.5);
+    else
+        if mode(1)==1
+            % switch to loading screen
+            app.HTML.HTMLSource = 'Loading_Screen.html';
+            app.HTML.Data = '0%';
+            pause(0.5);
+        end
+    end
     % put app at front
     figure(app.RPSPASS)
 
@@ -98,7 +106,12 @@ if ~isequal(filepath,0)
                 preferenceFolder_saveTempDir(filename,Data)
 
                 % update html status
-                app.HTML.Data = [num2str(round(100*(i/(FileNo*2)),0)),'%'];
+                if isempty(mode)
+
+                    app.HTML.Data = [num2str(round(100*(i/(FileNo*2)),0)),'%'];
+                else
+                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*(i/(FileNo*2)),0)),'%'];
+                end
             else
                 FailedFiles = [FailedFiles, i];
 
@@ -106,7 +119,13 @@ if ~isequal(filepath,0)
                 % this will speed up analysis and save memory
                 filename = ['Data_',num2str(i),'.mat'];
                 preferenceFolder_saveTempDir(filename,Data)
-                app.HTML.Data = [num2str(round(100*(i/(FileNo*2)),0)),'%'];
+                if isempty(mode)
+
+                    app.HTML.Data = [num2str(round(100*(i/(FileNo*2)),0)),'%'];
+                else
+                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*(i/(FileNo*2)),0)),'%'];
+
+                end
             end
 
         end
@@ -232,16 +251,17 @@ if ~isequal(filepath,0)
                     Report(i,'JSON Creation') = {'Off'};
                 end
 
-                % update html status
-                app.HTML.Data = [num2str(round(100*((i+FileNo)/(FileNo*2)),0)),'%'];
-
+                if isempty(mode)
+                    % update html status
+                    app.HTML.Data = [num2str(round(100*((i+FileNo)/(FileNo*2)),0)),'%'];
+                else
+                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*((i+FileNo)/(FileNo*2)),0)),'%'];
+                end
                 % collate report information
                 [Report] = createReport(i, Report, Data, Gates);
 
 
             else
-
-
                 % make failed output directories
                 mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'Individual Gating','Failed'))
                 mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'Cohort Gating','Failed'))
