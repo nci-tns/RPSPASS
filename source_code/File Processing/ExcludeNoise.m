@@ -17,17 +17,10 @@ ttime_bincenter = TTimeBins(1:end-1) + (diff(TTimeBins)/2);
 pop_stats = nan(numel(TTimeBins)-1, numel(options.thresholds)); % create empty array
 pop_dist = nan(numel(TTimeBins)-1, 1);  % create empty array
 
-bins = 0:4:300;
-bin_cent = bins(2:end)-diff(bins)/2;
 for i = 1:numel(TTimeBins)-1
     ind = ttime>=TTimeBins(i) & ttime < TTimeBins(i+1);
 %     pop_stats(i,:) = [prctile(diam(ind), options.thresholds)];
     pop_stats(i,:) = [mean(diam(ind)), 3*std(diam(ind))];
-    N = histcounts(diam(ind),bin_cent);
-    maxInd = find(N==max(N));
-    coef = polyfit(bin_cent(maxInd:end), N(maxInd:end), 1);
-    x_intercept(i) = (0 - coef(2))/coef(1);
-    pop_dist(i) = std(diam(ind));
 end
 
 for i = 1:numel(options.thresholds)

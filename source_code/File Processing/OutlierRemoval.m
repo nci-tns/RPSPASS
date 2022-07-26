@@ -16,7 +16,7 @@ for i = 1:Data.RPSPASS.MaxInt
     SpikeIn = DiamCalData(DiamCalData > Data.SpikeInGateMin(i)*Data.CaliFactor(i) & DiamCalData < Data.SpikeInGateMax(i)*Data.CaliFactor(i));
     SpikeInTT(i) = median(TransitTime(DiamCalData > Data.SpikeInGateMin(i)*Data.CaliFactor(i) & DiamCalData < Data.SpikeInGateMax(i)*Data.CaliFactor(i)));
     % Noise = DiamCalData(DiamCalData < Data.SpikeInGateMin(i)*Data.CaliFactor(i));
-    Noise = DiamCalData(Data.signal2noise(timgate) < 10);
+    Noise = DiamCalData(Data.NoiseInd(timgate));
 
     SI(i) = (prctile(SpikeIn,50) - prctile(Noise,50)) / (prctile(Noise,95));
     CVs(i) = 100*(std(SpikeIn)/mean(SpikeIn));
@@ -53,17 +53,17 @@ end
 % cycle through each transit time gate
 iteration.TT = floor(min(SpikeInTT)) : 0.2 : ceil(max(SpikeInTT));
 for i = 1:numel(iteration.TT )
-    index.TT(:,i) = SpikeInTT > iteration.TT(i) & SpikeInTT < iteration.TT(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_TT');
+    index.TT(:,i) = SpikeInTT >= iteration.TT(i) & SpikeInTT <= iteration.TT(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_TT');
 end
 
 iteration.CV = min(CVs):0.1:ceil(max(CVs));
 for i = 1:numel(iteration.CV)
-    index.CV(:,i) = CVs > iteration.CV(i) & CVs < iteration.CV(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV');
+    index.CV(:,i) = CVs >= iteration.CV(i) & CVs <= iteration.CV(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV');
 end
 
 iteration.SI = min(SI) : 0.1 : ceil(max(SI));
 for i = 1:numel(iteration.SI)
-    index.SI(:,i) = SI > iteration.SI(i) & SI < iteration.SI(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI');
+    index.SI(:,i) = SI >= iteration.SI(i) & SI <= iteration.SI(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI');
 end
 
 Best.NoCombs = numel(P1_Pressure_Uq)*numel(iteration.TT)*numel(iteration.CV)*numel(iteration.SI);
