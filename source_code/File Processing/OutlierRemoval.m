@@ -97,8 +97,9 @@ for i = 1:numel(P1_Pressure_Uq)
     end
 end
 
-[~,NoiseSpikeInRatio_Outliers] = rmoutliers(NoiseSpikeInRatio,'median');
-Best.index = and(Best.index(:), ~NoiseSpikeInRatio_Outliers(:));
+[~,NoiseSpikeInRatio_Outliers] = rmoutliers(NoiseSpikeInRatio(Best.index),'median');
+indexInt = find(Best.index);
+Best.index(indexInt(NoiseSpikeInRatio_Outliers)) = false;
 
 timegate = false(size(Data.AcqID));
 AcqIDind = unique(find(~Best.index));

@@ -15,23 +15,31 @@ end
 % update axis plotting preferences
 UpdatePlottingPrefs(app)
 
+% create gate for noise
+switch app.RemovenoiseMenu.Checked
+    case "off"
+        noiseGate = true(size(Data.diam));
+    case "on"
+        noiseGate = Data.TT2SN > 1;
+end
+
 % if spike-in is being used, swtich to calibrated data
 switch Data.RPSPASS.SpikeInUsed
     case 'On'
-        DiamData = Data.diam;
+        DiamData = Data.diam(noiseGate);
     case 'Off'
-        DiamData = Data.non_norm_d;
+        DiamData = Data.non_norm_d(noiseGate);
 end
 
 % plot time vs. diameter plot
-histogram2(app.DiamTimePlot, Data.time, DiamData,...
+histogram2(app.DiamTimePlot, Data.time(noiseGate), DiamData,...
     'XBinEdges',app.TimeEdges, 'YBinEdges',app.DiamEdges,...
     'DisplayStyle','tile')
 colormap(app.DiamTimePlot,app.Colormap) % update colormap
 set(app.DiamTimePlot,'ColorScale',app.Colorscaling) % update colorscaling
 
 % plot transit time vs. diameter plot
-histogram2(app.DiamTTimePlot, Data.ttime, DiamData,...
+histogram2(app.DiamTTimePlot, Data.ttime(noiseGate), DiamData,...
     'XBinEdges',app.TTimeEdges, 'YBinEdges',app.DiamEdges,...
     'DisplayStyle','tile')
 colormap(app.DiamTTimePlot,app.Colormap) % update colormap
@@ -100,4 +108,5 @@ if ~isempty(plots)
     legend(app.TimeStatPlot,plots, Label,'box','on','location','southeast');
     hold(app.TimeStatPlot,'off')
 end
+
 end

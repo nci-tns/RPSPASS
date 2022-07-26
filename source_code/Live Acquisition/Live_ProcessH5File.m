@@ -85,6 +85,7 @@ Data.ttime = trans_time; % Transit time (µs)
 Data.signal2noise = sn; % Signal to noise ratio
 Data.symmetry = sy; % Pulse symmetry
 Data.outliers = false(size(Data.time,1),1); % default matrix for outlier removal
+Data.TT2SN = Data.signal2noise./Data.ttime; % ratio used to define noise
 Data.acq_int = acq_int; % acquisition time
 Data.CaliFactor = ones(numel(Data.acq_int),1); % deterimed calibration factor for each acquisition
 Data.SpikeInGateMax = []; % determined maximum diameter for spike-in gate

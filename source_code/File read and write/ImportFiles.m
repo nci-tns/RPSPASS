@@ -24,14 +24,13 @@ filelocator = getprefRPSPASS('RPSPASS','filelocatorSelected');
 % if the filepath exists
 if ~isequal(filepath,0)
 
-    if isempty(mode)
-        % switch to loading screen
+    % switch to loading screen
+    if isempty(mode) % user mode
         app.HTML.HTMLSource = 'Loading_Screen.html';
         app.HTML.Data = '0%';
         pause(0.5);
-    else
+    else % developer mode
         if mode(1)==1
-            % switch to loading screen
             app.HTML.HTMLSource = 'Loading_Screen.html';
             app.HTML.Data = '0%';
             pause(0.5);

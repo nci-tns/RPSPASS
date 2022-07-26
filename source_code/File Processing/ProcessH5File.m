@@ -87,6 +87,7 @@ Data.acqvol = int_vol .* 1e9; % total volume of each acquisition (pL)
 Data.cumvol = cumvol .* 1e9; % Cumulative Volume (pL)
 Data.ttime = trans_time; % Transit time (µs)
 Data.signal2noise = sn; % Signal to noise ratio
+Data.TT2SN = Data.signal2noise./Data.ttime; % ratio used to define noise
 Data.symmetry = sy; % Pulse symmetry
 Data.outliers = false(size(Data.time,1),1); % default matrix for outlier removal
 Data.acq_int = acq_int; % acquisition time
