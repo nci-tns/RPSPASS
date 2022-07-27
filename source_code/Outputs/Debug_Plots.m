@@ -66,7 +66,7 @@ if isfield(Data, 'Debug')
                 Bins.time = linspace(min(Data.time),max(Data.time),res);
                 Bins.diam = linspace(0,400,res);
                 Bins.ttime = linspace(0,100,res);
-
+                Bins.TTSN = logspace(-2,2,res);
 
                 t = tiledlayout(3,2,'TileSpacing','compact','Padding','compact');
                 xData = cumsum(Data.acq_int) - (Data.acq_int/2);
@@ -82,7 +82,7 @@ if isfield(Data, 'Debug')
                     fill([0 0 max(Bins.time) max(Bins.time)],[min(Best.SI) max(Best.SI) max(Best.SI) min(Best.SI)],'g','facealpha',0.1) % show SI gate
                 end
 
-                formatPlot('Interval Separation Index',[], Bins)
+                formatPlot('Interval Separation Index',[], Bins.time)
 
                 %% remove data based on spike-in CV changes
                 nexttile
@@ -95,7 +95,7 @@ if isfield(Data, 'Debug')
                     fill([0 0 max(Bins.time) max(Bins.time)],[min(Best.CV) max(Best.CV) max(Best.CV) min(Best.CV)],'g','facealpha',0.1) % show SI gate
                 end
 
-                formatPlot('% Spike-in % CV',[],Bins)
+                formatPlot('% Spike-in % CV',[],Bins.time)
 
                 %% remove data based on spike-in / noise ratio changes
                 nexttile
@@ -107,12 +107,14 @@ if isfield(Data, 'Debug')
                     plot(xData(Best.index), OutlierRemoval.NoiseSpikeInRatio(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none') % show kept events
                 end
 
-                formatPlot('Noise / Spike-in events',[], Bins)
+                formatPlot('Particle Events / Spike-in events',[], Bins.time)
 
                 %% remove data based on spike-in transit time changes
-                nexttile
-                plot(xData, OutlierRemoval.SpikeInTT, '-k') % show raw data
 
+                nexttile
+                colororder({'k','k'})
+                yyaxis left
+                plot(xData, OutlierRemoval.SpikeInTT, '-k') % show raw data
                 if ~Best.num == 0
                     hold on
                     plot(xData(~Best.index), OutlierRemoval.SpikeInTT(~Best.index), 'o','markerfacecolor','r','MarkerEdgeColor','none','Color','k') % show outliers
@@ -120,23 +122,34 @@ if isfield(Data, 'Debug')
                     fill([0 0 max(Bins.time) max(Bins.time)],[min(Best.TT) max(Best.TT) max(Best.TT) min(Best.TT)],'g','facealpha',0.1) % show SI gate
                 end
 
-                formatPlot('Spike-in Transit Time (µs)',[], Bins)
+                formatPlot('Spike-in Transit Time (µs)',[], Bins.time)
 
-                %% remove data based on P1 set pressure changes
-
-                nexttile
+                yyaxis right
+                % remove data based on P1 set pressure changes
                 plot(xData, Data.SetPs(:,1), '-k') % show raw data
                 if ~Best.num == 0
                     hold on
                     plot(xData(~Best.index), Data.SetPs(~Best.index,1), 'o','markeredgecolor','r') % show outliers
-                    plot(xData(Best.index), Data.SetPs(Best.index,1), 'o','markeredgecolor','b')
+                    plot(xData(Best.index), Data.SetPs(Best.index,1), 'o','markeredgecolor','k')
                 end
 
-                formatPlot('P1 Pressure', [0 ceil(max(Data.SetPs(:,1)))], Bins)
+                formatPlot('P1 Pressure', [0 ceil(max(Data.SetPs(:,1)))], Bins.time)
 
+                %% show noise event removal gate
+                nexttile
+                histogram2(Data.TT2SN,Data.diam,'XBinEdges',Bins.TTSN,"YBinEdges",Bins.diam,"DisplayStyle","tile")
+                hold on
+                fill(log10([-2 -2 0 0]),...
+                    [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam)], [0.5 0 0], 'facealpha',0.2,'EdgeColor','none')
+                fill(log10([0 0 2 2]),...
+                    [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam)], [0 0.5 0], 'facealpha',0.2,'EdgeColor','none')
+                formatPlot('',[],Bins.TTSN)
+                set(gca,'xscale','log')
+                ylabel('RPS_{PASS} Diameter (nm)')
+                xlabel('RPS_{PASS} Signal:Noise Gate')
                 %% show raw events with overlay of keep/remove gates
                 nexttile
-                histogram2(Data.time,Data.diam,'XBinEdges',Bins.time,"YBinEdges",Bins.diam,"DisplayStyle","tile")
+                histogram2(Data.time(~Data.NoiseInd),Data.diam(~Data.NoiseInd),'XBinEdges',Bins.time,"YBinEdges",Bins.diam,"DisplayStyle","tile")
                 hold on
                 for i = 1:Data.RPSPASS.MaxInt
                     if Best.index(i) == 1
@@ -148,7 +161,7 @@ if isfield(Data, 'Debug')
                         [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam) ], col, 'facealpha',0.2,'EdgeColor','none')
                 end
 
-                formatPlot('RPS_{PASS} Diameter (nm)',[],Bins)
+                formatPlot('RPS_{PASS} Diameter (nm)',[],Bins.time)
 
             end
     end
@@ -179,7 +192,7 @@ end
 function formatPlot(ylabelStr,ylims, Bins)
 xlabel('Time (seconds)')
 ylabel(ylabelStr)
-xlim([0 max(Bins.time)])
+xlim([0 max(Bins)])
 if ~isempty(ylims)
     ylim(ylims)
 end

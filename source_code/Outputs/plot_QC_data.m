@@ -69,7 +69,7 @@ xlabel('RPS_{PASS} Diameter (nm)')
 
 %% noise/spike in removal data plotting
 
-ind = and(~Data.outliers,QC_gate);
+ind = and(~Data.outliers,~Data.NoiseInd);
 TimeData = Data.time(ind);
 TTimeData = Data.ttime(ind);
 DiamData = Data.diam(ind);

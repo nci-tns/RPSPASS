@@ -7,21 +7,28 @@ SI = nan(Data.RPSPASS.MaxInt,1);
 CVs = nan(Data.RPSPASS.MaxInt,1);
 NoiseEvents = nan(Data.RPSPASS.MaxInt,1);
 NoiseSpikeInRatio = nan(Data.RPSPASS.MaxInt,1);
+SpikeInTT = nan(Data.RPSPASS.MaxInt,1);
+
+SpikeInGateMaxNorm = max(Data.SpikeInGateMax(~Data.RPSPASS.FailedAcq) .* Data.CaliFactor(~Data.RPSPASS.FailedAcq));
+SpikeInGateMinNorm = min(Data.SpikeInGateMin(~Data.RPSPASS.FailedAcq) .* Data.CaliFactor(~Data.RPSPASS.FailedAcq));
 
 for i = 1:Data.RPSPASS.MaxInt
     % isolate data for acquisition
     timgate = Data.time >= Data.RPSPASS.AcqInt(i) & Data.time < Data.RPSPASS.AcqInt(i+1);
     DiamCalData = Data.diam(timgate);
     TransitTime = Data.ttime(timgate);
-    SpikeIn = DiamCalData(DiamCalData > Data.SpikeInGateMin(i)*Data.CaliFactor(i) & DiamCalData < Data.SpikeInGateMax(i)*Data.CaliFactor(i));
-    SpikeInTT(i) = median(TransitTime(DiamCalData > Data.SpikeInGateMin(i)*Data.CaliFactor(i) & DiamCalData < Data.SpikeInGateMax(i)*Data.CaliFactor(i)));
-    % Noise = DiamCalData(DiamCalData < Data.SpikeInGateMin(i)*Data.CaliFactor(i));
+
+    SpikeInIndex = DiamCalData >= SpikeInGateMinNorm & DiamCalData <= SpikeInGateMaxNorm;
+    SpikeIn = DiamCalData(SpikeInIndex);
+    SpikeInTT(i) = median(TransitTime(SpikeInIndex));
+
     Noise = DiamCalData(Data.NoiseInd(timgate));
+    Events = DiamCalData(~Data.NoiseInd(timgate));
 
     SI(i) = (prctile(SpikeIn,50) - prctile(Noise,50)) / (prctile(Noise,95));
     CVs(i) = 100*(std(SpikeIn)/mean(SpikeIn));
     NoiseEvents(i) = numel(Noise);
-    NoiseSpikeInRatio(i) = numel(Noise) / numel(SpikeIn);
+    NoiseSpikeInRatio(i) = (numel(Events)-numel(SpikeIn)) / numel(SpikeIn);
 
     % pass debug plotting information
     Data.Debug.OutlierRemoval.Noise(i) = median(Noise);

@@ -19,8 +19,6 @@ outputPref.fcs = getprefRPSPASS('RPSPASS','fcsfile');
 outputPref.csv = getprefRPSPASS('RPSPASS','csvfile');
 filelocator = getprefRPSPASS('RPSPASS','filelocatorSelected');
 
-
-
 % if the filepath exists
 if ~isequal(filepath,0)
 
