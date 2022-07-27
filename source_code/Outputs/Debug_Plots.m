@@ -139,14 +139,16 @@ if isfield(Data, 'Debug')
                 nexttile
                 histogram2(Data.TT2SN,Data.diam,'XBinEdges',Bins.TTSN,"YBinEdges",Bins.diam,"DisplayStyle","tile")
                 hold on
-                fill(log10([-2 -2 0 0]),...
+                fill(10.^[-2 -2 0 0],...
                     [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam)], [0.5 0 0], 'facealpha',0.2,'EdgeColor','none')
-                fill(log10([0 0 2 2]),...
+                
+                fill(10.^([0 0 2 2]),...
                     [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam)], [0 0.5 0], 'facealpha',0.2,'EdgeColor','none')
                 formatPlot('',[],Bins.TTSN)
                 set(gca,'xscale','log')
                 ylabel('RPS_{PASS} Diameter (nm)')
-                xlabel('RPS_{PASS} Signal:Noise Gate')
+                xlabel('Signal:Noise / Transit Time')
+
                 %% show raw events with overlay of keep/remove gates
                 nexttile
                 histogram2(Data.time(~Data.NoiseInd),Data.diam(~Data.NoiseInd),'XBinEdges',Bins.time,"YBinEdges",Bins.diam,"DisplayStyle","tile")
