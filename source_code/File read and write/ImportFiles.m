@@ -43,22 +43,12 @@ if ~isequal(filepath,0)
     % load .h5 combined files only
     SelectedFolderInfo = dir(fullfile(filepath,'*.h5'));
     [Filenames, FileGroup, FileNo] = ObtainFilenames(natsort({SelectedFolderInfo.name}'), filelocator);
-
+ 
     if numel(Filenames) > 0
-
-
-        % if debug mode is turned on, create an output directory
-        switch getprefRPSPASS('RPSPASS','debugSelected')
-            case 'true'
-                mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'Debug'))
-        end
-
-        % create output folder
-        mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'Individual Gating'))
 
         % create table for reporting
         TableHeaders = {'Filename', 'Sample Information','Sample Source','Sample Isolation','Sample Diluent','Spike-in information','Cartridge ID','Instrument Sheath Fluid',...
-            'Diameter Calibration', 'Outlier Removal', 'Noise Removal', 'Spike-in Removal', 'FCS Creation','MAT Creation','CSV Creation','JSON Creation',...
+            'Diameter Calibration', 'Outlier Removal', 'Spike-in Removal', 'FCS Creation','MAT Creation','CSV Creation','JSON Creation',...
             'Unprocessed Total Events','Unprocessed Total Volume (pL)','Unprocessed Total Conc (mL^-1)',...
             'IndGate Non-spike-in Events','IndGate Spike-in Events','IndGate Total Volume (pL)','IndGate Sample Conc (mL^-1)','IndGate Spike-In Conc (mL^1)','IndGate Diameter Gate (nm)','IndGate Transit Time Gate (µs)',...
             'CoGate Non-spike-in Events','CoGate Spike-in Events','CoGate Total Volume (pL)','CoGate Sample Conc (mL^-1)','CoGate Spike-In Conc (mL^1)','CoGate Diameter Gate (nm)','CoGate Transit Time Gate (µs)',...
@@ -77,25 +67,33 @@ if ~isequal(filepath,0)
 
             [app,Data, Report] = ProcessH5File(app, filepath,Filenames{i}, Report, i, FileGroup);
 
-            if ~strcmp(Report{i,'Diameter Calibration'},'Failed') &&... % if diameter calibration passed
-                    ~strcmp(Report{i,'Outlier Removal'},'Failed') &&... % if outlier removal passed
-                    ~strcmp(Report{i,'Noise Removal'},'Failed')         % of moise removal passed
+            % try % calibrate diameter
+            [Data, Stat, Report] = DiamCalibration(app, Data, i, Report);
+            % catch
+            %     Report(FileID,'Diameter Calibration') = {'Failed'};
+            % end
+
+
+       
+                    % try % remove outliers
+                    [Data,Report] = OutlierRemoval(Data, Report, i);
+                         % if debug mode is turned on, create an output directory
+            switch getprefRPSPASS('RPSPASS','debugSelected')
+                case 'on'
+                    %     Report(FileID,'Outlier Removal') = {'Passed'};
+                    % catch
+                    %     Report(FileID,'Outlier Removal') = {'Failed'};
+                    % end
+                    Debug_Plots(Data, 'OutlierRemoval')
+
+            end
+
+
+
+            if ~strcmp(Report{i,'Diameter Calibration'},'Failed')  % if diameter calibration passed
 
                 % create output plots for file
-                outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],'Individual Gating',[replace(Filenames{i},'.','-'),'_QC.jpeg']);
-                plot_QC_data(app,Data,outputPath,Data.Ind_gate)
-
-                % collate individual sample gates for downstream group gating
-                Gates.diam(i,:) = Data.boundary.diam;
-                Gates.ttime(i,:) = Data.boundary.ttime;
-                switch Data.RPSPASS.SpikeInUsed
-                    case 'Yes'
-                        if isempty(Data.SpikeInGateMinNorm)
-                            Gates.minSpike(i) = nan;
-                        else
-                            Gates.minSpike(i) = Data.SpikeInGateMinNorm;
-                        end
-                end
+                plot_QC_data(Data)
 
                 % save the h5 file data as temporary .mat file for further gating
                 % this will speed up analysis and save memory
@@ -104,10 +102,9 @@ if ~isequal(filepath,0)
 
                 % update html status
                 if isempty(mode)
-
                     app.HTML.Data = [num2str(round(100*(i/(FileNo*2)),0)),'%'];
                 else
-                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*(i/(FileNo*2)),0)),'%'];
+                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*(i/(FileNo*2)),1)),'%'];
                 end
             else
                 FailedFiles = [FailedFiles, i];
@@ -117,59 +114,24 @@ if ~isequal(filepath,0)
                 filename = ['Data_',num2str(i),'.mat'];
                 preferenceFolder_saveTempDir(filename,Data)
                 if isempty(mode)
-
                     app.HTML.Data = [num2str(round(100*(i/(FileNo*2)),0)),'%'];
                 else
-                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*(i/(FileNo*2)),0)),'%'];
+                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*(i/(FileNo*2)),1)),'%'];
 
                 end
             end
-
         end
 
-        % find a suitable gate for all data
-        if size(Gates.diam,1) == 1
-
-        else
-            Gates.diam = max(Gates.diam);
-            Gates.ttime = max(Gates.ttime);
-        end
-
-        switch Data.RPSPASS.SpikeInUsed
-            case 'Yes'
-                Gates.minSpike = min(Gates.minSpike);
-        end
-
-        %% create group directory output
-        mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'Cohort Gating'))
-
-        % create fcs file output
-        if outputPref.fcs == 1
-            mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'FCS Files'))
-        end
-
-        % create mat file output
-        if outputPref.mat == 1
-            mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'MAT Files'))
-        end
-
-        % create csv file output
-        if outputPref.csv == 1
-            mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'CSV Files'))
-        end
-
-        % create csv file output
-        if outputPref.csv == 1
-            mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'JSON Files'))
-        end
-
+return
+    
+        %% process files for cohort analysis
         for i = 1:FileNo
             % load file from temporary directory
             filename = ['Data_',num2str(i),'.mat'];
             Data = preferenceFolder_loadTempDir(filename);
+            setprefRPSPASS('RPSPASS','CurrFile',Filenames{i})
 
             if ~sum(i == FailedFiles)
-
 
                 % check if sample failed calibration/outlier process and exclude
                 if Data.fail == true
@@ -183,91 +145,23 @@ if ~isequal(filepath,0)
                     outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],'Cohort Gating',[replace(Filenames{i},'.','-'),'_QC.jpeg']);
                     plot_QC_data(app,Data,outputPath, Data.Coh_gate)
                 end
-
-                %% create fcs filename
-                filename = fullfile(filepath,['RPSPASS ', timestamp_filename],'FCS Files',[replace(Filenames{i},'.','-'),'.fcs']);
-
-                % export fcs file data
-                if outputPref.fcs == 1
-                    try % if turned on
-                        fcsfileexport(app, Data, timestamp, filename)
-                        Report(i,'FCS Creation') = {'Successful'};
-                    catch
-                        Report(i,'FCS Creation') = {'Failed'};
-                    end
-                else % if turned on
-                    Report(i,'FCS Creation') = {'Off'};
-                end
-
-                %% create .mat filename
-                filename = fullfile(filepath,['RPSPASS ', timestamp_filename],'MAT Files',[replace(Filenames{i},'.','-'),'.mat']);
-
-                % export .mat file data
-                if outputPref.mat == 1 % if turned on
-                    try
-                        save(filename, 'Data')
-                        Report(i,'MAT Creation') = {'Successful'};
-                    catch
-                        Report(i,'MAT Creation') = {'Failed'};
-                    end
-                else % if turned on
-                    Report(i,'MAT Creation') = {'Off'};
-                end
-
-                %% create .csv filename
-                filename = fullfile(filepath,['RPSPASS ', timestamp_filename],'CSV Files',[replace(Filenames{i},'.','-'),'.xlsx']);
-
-                % export fcs file data
-                if outputPref.fcs == 1
-                    try % if turned on
-                        writeSpectradyneCVS(app, Data, timestamp, filename)
-                        Report(i,'CSV Creation') = {'Successful'};
-                    catch
-                        Report(i,'CSV Creation') = {'Failed'};
-                    end
-                else % if turned on
-                    Report(i,'CSV Creation') = {'Off'};
-                end
-
-                %% create .json filename
-                filename = fullfile(filepath,['RPSPASS ', timestamp_filename],'JSON Files',[replace(Filenames{i},'.','-'),'.json']);
-
-                % export .mat file data
-                if outputPref.mat == 1 % if turned on
-                    try
-                        jsondata = jsonencode(Data);
-                        fid = fopen(filename,'w');
-                        fprintf(fid,'%s',jsondata);
-                        fclose(fid);
-
-                        Report(i,'JSON Creation') = {'Successful'};
-                    catch
-                        Report(i,'JSON Creation') = {'Failed'};
-                    end
-                else % if turned on
-                    Report(i,'JSON Creation') = {'Off'};
-                end
-
+                
+                Report = ExportDatafileTypes(i, Filenames{i}, Data, timestamp, Report);
+             
                 if isempty(mode)
                     % update html status
                     app.HTML.Data = [num2str(round(100*((i+FileNo)/(FileNo*2)),0)),'%'];
                 else
-                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*((i+FileNo)/(FileNo*2)),0)),'%'];
+                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*((i+FileNo)/(FileNo*2)),1)),'%'];
                 end
+
                 % collate report information
                 [Report] = createReport(i, Report, Data, Gates);
 
-
             else
-                % make failed output directories
-                mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'Individual Gating','Failed'))
-                mkdir(fullfile(filepath,['RPSPASS ', timestamp_filename],'Cohort Gating','Failed'))
 
                 % output plots that failed QC for inspection
-                outputPath1 = fullfile(filepath,['RPSPASS ', timestamp_filename],'Individual Gating','Failed',[replace(Filenames{i},'.','-'),'_QC.jpeg']);
-                outputPath2 = fullfile(filepath,['RPSPASS ', timestamp_filename],'Cohort Gating','Failed',[replace(Filenames{i},'.','-'),'_QC.jpeg']);
-                plot_Failed_QC_data(app,Data,outputPath1, outputPath2)
-
+                plot_Failed_QC_data(Data)
             end
         end
 

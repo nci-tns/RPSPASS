@@ -1,7 +1,7 @@
 function [Report] = createReport(FileID, Report, Data, Gates)
 
-ind_gate = and(~Data.outliers,~Data.NoiseInd); % sample gated population
-coh_gate = and(~Data.outliers,~Data.NoiseInd); % cohort gated population
+ind_gate = and(~Data.outliers,~Data.Indices.NoiseInd); % sample gated population
+coh_gate = and(~Data.outliers,~Data.Indices.NoiseInd); % cohort gated population
 
 CoFact_pl2mL = 1e9;
 

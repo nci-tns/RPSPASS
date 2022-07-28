@@ -87,6 +87,30 @@ switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
 
     case 'static'
 
+        [SpikeIn_data, ~, Data] = FindCalibrationPeak(Data, Data.non_norm_d, 1);
+
+        % get the spike-in count for each acquisition
+        SpikeIn_Count = cellfun(@numel, SpikeIn_data);
+
+        [CalFactor, CalFailure, diam_norm] = getCaliFactor(app, Data, SpikeIn_data);
+        if sum(SpikeIn_Count>10) <= Data.RPSPASS.MaxInt*0.5
+            if sum(SpikeIn_Count) >= getprefRPSPASS('RPSPASS','StaticCalSpikeInThresh')
+                % outlier removal stats
+                Stat.CalFailure(1:end) = CalFailure;
+                Stat.DiamCalFactor(1:end) = CalFactor;
+                Stat.DiamMode(1:end) = mode(round(diam_norm,0));
+                Stat.Events(1:end) = numel(diam_norm);
+                Stat.Ttime(1:end) = mode(round(Data.ttime(TimeGate),0));
+
+                Data.diam = Data.non_norm_d * CalFactor;
+                Data.CaliFactor = [Data.CaliFactor; CalFactor];
+                Report(FileID,'Diameter Calibration')  = {'Reverted to static calibration'};
+            else
+                Report(FileID,'Diameter Calibration')  = {'Failed: too few spike-in events'};
+            end
+        end
+
+end
 
 
 end

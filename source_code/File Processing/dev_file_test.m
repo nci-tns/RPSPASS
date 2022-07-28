@@ -16,9 +16,9 @@ if isfolder(test_path)
         % split path into individual folders to extract spike-in use,
         % diameter, and concentration for processing
         if ismac()
-            filep = strsplit(Sets{1},'/');
+            filep = strsplit(Sets{i},'/');
         elseif ispc()
-             filep = strsplit(Sets{1},'\');
+             filep = strsplit(Sets{i},'\');
         end
 
         % get folder name that dictates spike-in concentration
@@ -38,7 +38,7 @@ if isfolder(test_path)
             app.SpikeInUsed = 'Yes';
             app.SpikeInDiam = SpikeInStr;
         end
-        
+
         [status, message]=ImportFiles(app, Sets{i},[i SetNo]);
     end
 

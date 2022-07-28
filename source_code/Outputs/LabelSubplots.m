@@ -22,7 +22,7 @@ end
 for i = 1:numel(SubplotLabels)
 
     xPos = ChilAx(titleInd(i)).Position(1);
-    yPos = ChilAx(titleInd(i)).Position(2) + (ChilAx(titleInd(i)).Position(4) * 1.01);
+    yPos = ChilAx(titleInd(i)).Position(2) + (ChilAx(titleInd(i)).Position(4) * 1.03);
 
     annotation('textbox', [xPos yPos 0 0],...
         'string', SubplotLabels{i},'FontSize',14,'FontWeight','bold','verticalalignment','baseline',...

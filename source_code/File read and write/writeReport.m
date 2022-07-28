@@ -24,7 +24,12 @@ for i = 1:numel(GroupNames)
     Write.(GroupNames{i}) = [replace(TableHeaders(Ind.(GroupNames{i})),{'IndGate ','CoGate '},''); table2cell(Export.(GroupNames{i}))];
 
     % export report to excel spreadsheet
-    writecell(Write.(GroupNames{i}),outputPath,'Sheet',SheetName{i},'UseExcel',true,'FileType','spreadsheet')
+    if ismac()
+        writecell(Write.(GroupNames{i}),outputPath,'Sheet',SheetName{i},'UseExcel',false,'FileType','spreadsheet')
+    elseif ispc()
+        writecell(Write.(GroupNames{i}),outputPath,'Sheet',SheetName{i},'UseExcel',true,'FileType','spreadsheet')
+    end
+
 end
 
 end
