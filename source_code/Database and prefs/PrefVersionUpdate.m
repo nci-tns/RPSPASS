@@ -16,7 +16,8 @@ Prefs = {...
     'Threshold_SpikeIn_CV', 2;...    % range allowed from minimum CV (%)
     'Threshold_SpikeIn_SI', 0.2;... % percentage of max SI to keep
     'Threshold_SpikeIn_TT', 5;...   % transit time gate range in µs
-
+    'Threshold_SpikeIn_TTSN',1.5;... % signal2noise/transit time threshold
+    
     'CalibrationMethod', 'Kernel';...   % spike in bead fitting method
     'DynamicCalSpikeInThresh',10;...    % min spike-in events to perform dynamic calibration
     'StaticCalSpikeInThresh',50;...     % min spike-in events to perform static calibration

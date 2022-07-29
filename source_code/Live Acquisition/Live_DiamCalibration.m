@@ -50,10 +50,9 @@ switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
         % dynamic calibration revert to static calibration
         if sum(SpikeIn_Count>10) <= Data.RPSPASS.MaxInt*0.5
             if sum(SpikeIn_Count) >= getprefRPSPASS('RPSPASS','StaticCalSpikeInThresh')
+
                 [SpikeIn_data, ~, Data] = FindCalibrationPeak(Data, Data.non_norm_d, 1);
-
-                [CalFactor, ~, ~] = getCaliFactor(app, Data, SpikeIn_data);
-
+                [CalFactor] = Live_getCaliFactor(app, Data, SpikeIn_data);
 
                 Data.diam = Data.non_norm_d * CalFactor;
                 Data.CaliFactor = [Data.CaliFactor; CalFactor];

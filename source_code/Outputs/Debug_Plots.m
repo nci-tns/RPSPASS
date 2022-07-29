@@ -175,6 +175,7 @@ if isfield(Data, 'Debug')
 
                 fill(10.^([0 0 2 2]),...
                     [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam)], [0 0.5 0], 'facealpha',0.2,'EdgeColor','none')
+                text(10^(-2+(4*0.05)), (max(Bins.diam)-min(Bins.diam))*0.9,'All Events','FontWeight','bold')
                 formatPlot('',[],Bins.TTSN)
                 set(gca,'xscale','log')
                 ylabel('RPS_{PASS} Diameter (nm)')
@@ -189,6 +190,7 @@ if isfield(Data, 'Debug')
 
                 fill(10.^([0 0 2 2]),...
                     [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam)], [0 0.5 0], 'facealpha',0.2,'EdgeColor','none')
+                text(10^(-2+(4*0.05)),(max(Bins.diam)-min(Bins.diam))*0.9,'Outlers Removed','FontWeight','bold')
                 formatPlot('',[],Bins.TTSN)
                 set(gca,'xscale','log')
                 ylabel('RPS_{PASS} Diameter (nm)')
@@ -210,6 +212,7 @@ if isfield(Data, 'Debug')
                     end
 
                 end
+                text((Data.RPSPASS.AcqInt(Data.RPSPASS.MaxInt))*.05, 10^(-2+(4*0.9)),'All Events','FontWeight','bold')
 
                 set(gca,'yscale','log')
                 grid off
@@ -229,7 +232,7 @@ if isfield(Data, 'Debug')
                     fill([Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i+1) Data.RPSPASS.AcqInt(i+1)],...
                         [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam) ], col, 'facealpha',0.2,'EdgeColor','none')
                 end
-
+                text((Data.RPSPASS.AcqInt(Data.RPSPASS.MaxInt))*.05, (max(Bins.diam)-min(Bins.diam))*0.9,'Noise Events','FontWeight','bold')
                 formatPlot('RPS_{PASS} Diameter (nm)',[],Bins.time)
 
                 nexttile
@@ -244,9 +247,8 @@ if isfield(Data, 'Debug')
                     fill([Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i+1) Data.RPSPASS.AcqInt(i+1)],...
                         [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam) ], col, 'facealpha',0.2,'EdgeColor','none')
                 end
-
+                text((Data.RPSPASS.AcqInt(Data.RPSPASS.MaxInt))*.05, (max(Bins.diam)-min(Bins.diam))*0.9,'Noise Removed','FontWeight','bold')
                 formatPlot('RPS_{PASS} Diameter (nm)',[],Bins.time)
-
 
                 title(t,['Outlier Removal QC, ',num2str(Best.NoCombs),' Iterations Tested'],'fontsize',14)
             end

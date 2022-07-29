@@ -2,14 +2,14 @@ function [OutputFilenames, FileGroup, FileNo] = ObtainFilenames(InputFilenames, 
 
 switch filelocator
     case '_ss00'
-        [Filenames, FileGroup, FileNo] = get_ss00(InputFilenames, '_ss00');
+        [Filenames, FileGroup, FileNo] = get_ss00(InputFilenames, '_ss00.h5');
         if isempty(Filenames)
-            [Filenames, FileGroup, FileNo] = get_cc(InputFilenames, '_cc');
+            [Filenames, FileGroup, FileNo] = get_cc(InputFilenames, '_cc.h5');
         end
     case '_cc'
-        [Filenames, FileGroup, FileNo] = get_cc(InputFilenames, '_cc');
+        [Filenames, FileGroup, FileNo] = get_cc(InputFilenames, '_cc.h5');
         if isempty(Filenames)
-            [Filenames, FileGroup, FileNo] = get_ss00(InputFilenames, '_ss00');
+            [Filenames, FileGroup, FileNo] = get_ss00(InputFilenames, '_ss00.h5');
         end
 end
 
@@ -29,7 +29,7 @@ StrInd = regexp(Filenames_ss, filelocator); % find the location of the filelocat
 for i = 1:numel(Filenames_ss)
     tempFilenameSS = Filenames_ss{i}(1:StrInd{i}(end)-1); % delete everything after filelocator in filename
     StrInd2 = strfind(tempFilenameSS, '_'); % delete everything after the '_' representing run ID
-    Filenames_ss2{i} = tempFilenameSS(1:StrInd2-1); % obtain non-unique sample name
+    Filenames_ss2{i} = tempFilenameSS(1:StrInd2(end)-1); % obtain non-unique sample name
 end
 
 % find the unique sample names

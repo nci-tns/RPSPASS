@@ -38,12 +38,26 @@ histogram2(app.DiamTimePlot, Data.time(noiseGate), DiamData,...
 colormap(app.DiamTimePlot,app.Colormap) % update colormap
 set(app.DiamTimePlot,'ColorScale',app.Colorscaling) % update colorscaling
 
-% plot transit time vs. diameter plot
+
+% plot S2N/transit time vs. diameter plot
 histogram2(app.DiamTTimePlot, Data.ttime(noiseGate), DiamData,...
     'XBinEdges',app.TTimeEdges, 'YBinEdges',app.DiamEdges,...
     'DisplayStyle','tile')
 colormap(app.DiamTTimePlot,app.Colormap) % update colormap
 set(app.DiamTTimePlot,'ColorScale',app.Colorscaling) % update colorscaling
+
+% plot transit time vs. diameter plot
+histogram2(app.S2NTT_Diam, Data.TT2SN(noiseGate), DiamData,...
+    'XBinEdges',app.S2NTTEdges, 'YBinEdges',app.DiamEdges,...
+    'DisplayStyle','tile')
+colormap(app.S2NTT_Diam,app.Colormap) % update colormap
+set(app.S2NTT_Diam,'ColorScale',app.Colorscaling,'xscale','log') % update colorscaling
+
+% plot diameter histogram
+histogram(app.DiamHist, DiamData,app.DiamEdges, 'linewidth',2,...
+    'DisplayStyle','stairs','edgecolor','k')
+set(app.DiamHist,'xscale','linear') % update colorscaling
+
 
 % plot time vs. spike-in transit time
 switch Data.RPSPASS.SpikeInUsed
@@ -59,8 +73,7 @@ end
 % clear plot
 plot(app.TimeStatPlot, nan, nan)
 
-Sets = unique(Data.AcqID);
-xData = (Sets.*Data.acq_int)-(Data.acq_int./2);
+xData = Data.Acqtime(2:end) - diff(Data.Acqtime)/2;
 Label = [];
 hold(app.TimeStatPlot,'on')
 plots = [];
@@ -72,7 +85,7 @@ switch app.TotalEventsMenu.Checked
             Events(i) = sum(Data.AcqID==Sets(i));
         end
         Label = [Label,{'Total Count'}];
-        plots = [plots, plot(app.TimeStatPlot, xData(:), Events(:),'o-k','linewidth',2)];
+        plots = [plots, plot(app.TimeStatPlot, xData, Events(:),'o-k','linewidth',2)];
 
 end
 switch app.MeanTotalEventsMenu.Checked

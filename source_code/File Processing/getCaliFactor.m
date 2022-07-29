@@ -2,10 +2,11 @@ function [CalFactor, CalFailure, diam_norm] = getCaliFactor(app, Data, diam_norm
 
 
 
-if strcmp(app.SpikeInUsed,'No')
+switch app.SpikeInUsed
+    case 'No'
 
 
-elseif strcmp(app.SpikeInUsed,'Yes')
+    case 'Yes'
 
 
     switch Data.RPSPASS.CalMethod
