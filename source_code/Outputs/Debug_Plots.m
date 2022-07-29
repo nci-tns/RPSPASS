@@ -250,7 +250,11 @@ if isfield(Data, 'Debug')
                 text((Data.RPSPASS.AcqInt(Data.RPSPASS.MaxInt))*.05, (max(Bins.diam)-min(Bins.diam))*0.9,'Noise Removed','FontWeight','bold')
                 formatPlot('RPS_{PASS} Diameter (nm)',[],Bins.time)
 
-                title(t,['Outlier Removal QC, ',num2str(Best.NoCombs),' Iterations Tested'],'fontsize',14)
+                jf=java.text.DecimalFormat; % comma for thousands, three decimal places
+                IterationStr = char(jf.format(Best.NoCombs)); 
+
+                % add title
+                title(t,['Outlier Removal QC, ',IterationStr,' Iterations Tested'],'fontsize',14)
             end
     end
 end
