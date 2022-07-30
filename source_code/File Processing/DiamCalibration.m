@@ -2,7 +2,7 @@ function [Data, Stat, Report] = DiamCalibration(app,Data, FileID, Report)
 
 switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
 
-    case 'auto'
+    case 'dynamic'
 
         SpikeIn_data = cell(1,Data.RPSPASS.MaxInt);
         % cycle through each acquisition to perform dynamic calibration

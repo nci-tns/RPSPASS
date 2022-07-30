@@ -1,4 +1,4 @@
-function rmprefFCMPASS(PrefType)
+function rmprefRPSPASS(PrefType)
 
 username = char(java.lang.System.getProperty('user.name'));
 

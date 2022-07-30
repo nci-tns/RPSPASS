@@ -14,9 +14,9 @@ Prefs = {...
     'last_dir','';... % last working directory
 
     'Threshold_SpikeIn_CV', 2;...    % range allowed from minimum CV (%)
-    'Threshold_SpikeIn_SI', 0.2;... % percentage of max SI to keep
-    'Threshold_SpikeIn_TT', 5;...   % transit time gate range in µs
-    'Threshold_SpikeIn_TTSN',1.5;... % signal2noise/transit time threshold
+    'Threshold_SpikeIn_SI', 0.2;... % range of SI to keep
+    'Threshold_SpikeIn_TT', 5;...   % range of transit time gate range in µs
+    'Threshold_SpikeIn_TTSN',1.5;... % range of signal2noise/transit time threshold
     
     'CalibrationMethod', 'Kernel';...   % spike in bead fitting method
     'DynamicCalSpikeInThresh',10;...    % min spike-in events to perform dynamic calibration
@@ -36,12 +36,7 @@ Prefs = {...
     'outlierremovalNum',[];...                     % num of options for outlier selection in pref panel
     'outlierremovalSelected','';...                % selected outlier removal selection in pref panel
 
-    'noiseremovalOptions',{'on','off'};...       % noise removal
-    'noiseremovalSelection', [true; false];...   % logic gate for noise removal selection in pref panel
-    'noiseremovalNum',[];...                     % num of options for noise removal selection in pref panel
-    'noiseremovalSelected','';...                % selected noise removal selection in pref panel
-
-    'diamcalitypeOptions',{'auto','static'};...
+    'diamcalitypeOptions',{'dynamic','static'};...
     'diamcalitypeSelection', [true; false];...   % logic gate for outlier selection in pref panel
     'diamcalitypeNum',[];...                     % num of options for outlier selection in pref panel
     'diamcalitypeSelected','';...                % num of options for outlier selection in pref panel
@@ -69,10 +64,6 @@ for i = 1:size(Prefs,1)
     elseif strcmp(Prefs{i,1},'outlierremovalNum')
         N = numel(getprefRPSPASS('RPSPASS','outlierremovalOptions'));
         setprefRPSPASS('RPSPASS','outlierremovalNum', N)
-
-    elseif strcmp(Prefs{i,1},'noiseremovalNum')
-        N = numel(getprefRPSPASS('RPSPASS','noiseremovalOptions'));
-        setprefRPSPASS('RPSPASS','noiseremovalNum', N)
 
     elseif strcmp(Prefs{i,1},'debugNum')
         N = numel(getprefRPSPASS('RPSPASS','debugOptions'));

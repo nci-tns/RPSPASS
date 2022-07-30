@@ -2,7 +2,7 @@ function [Data] = Live_DiamCalibration(app, Data)
 
 switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
 
-    case 'auto'
+    case 'dynamic'
 
         SpikeIn_data = cell(1,Data.RPSPASS.MaxInt);
         % cycle through each acquisition to perform dynamic calibration
@@ -61,7 +61,19 @@ switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
 
     case 'static'
 
+     [SpikeIn_data, ~, Data] = FindCalibrationPeak(Data, Data.non_norm_d, 1);
 
+        % get the spike-in count for each acquisition
+        SpikeIn_Count = cellfun(@numel, SpikeIn_data);
+
+        [CalFactor ] = Live_getCaliFactor(app, Data, SpikeIn_data);
+        if sum(SpikeIn_Count>10) <= Data.RPSPASS.MaxInt*0.5
+            if sum(SpikeIn_Count) >= getprefRPSPASS('RPSPASS','StaticCalSpikeInThresh')
+
+                Data.diam = Data.non_norm_d * CalFactor;
+                Data.CaliFactor = [Data.CaliFactor; CalFactor];
+            end
+        end
 
 end
 
