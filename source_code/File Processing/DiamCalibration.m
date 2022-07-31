@@ -1,4 +1,4 @@
-function [Data, Stat, Report] = DiamCalibration(app,Data, FileID, Report)
+function [Data, Report] = DiamCalibration(app,Data, FileID, Report)
 
 switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
 
@@ -21,7 +21,6 @@ switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
                         diam_norm = nan;
                     else
                         [SpikeIn_data{i}, CalFailure, Data] = FindCalibrationPeak(Data, DiamCalData, i);
-
 
                         if numel(SpikeIn_data{i}) >= getprefRPSPASS('RPSPASS','DynamicCalSpikeInThresh') & CalFailure == false
 

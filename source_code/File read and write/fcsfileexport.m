@@ -1,10 +1,10 @@
-function fcsfileexport(app, Data, timestamp, filename)
+function fcsfileexport(Data, timestamp, filename)
 
 
     %% create header information
 
     % add software information to fcs hdr
-    fcs_hdr.RPSPASS_Version = app.Version;
+    fcs_hdr.RPSPASS_Version = getprefRPSPASS('RPSPASS','version');
     fcs_hdr.RPSPASS_Date = timestamp;
 
     % add nCS1 file info to fcs header

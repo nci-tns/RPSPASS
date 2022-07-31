@@ -12,12 +12,15 @@ timestamp_filename = replace(timestamp, ':', '-');
 % save path to output dir for subscripting functions
 setprefRPSPASS('RPSPASS','OutputDir',fullfile(filepath,['RPSPASS ', timestamp_filename]))
 
+CohortOutput = getprefRPSPASS('RPSPASS','cohortAnalysisSelected'); % cohort analysis on/off
 
-% get output preferences
-outputPref.mat = getprefRPSPASS('RPSPASS','matfile');
-outputPref.fcs = getprefRPSPASS('RPSPASS','fcsfile');
-outputPref.csv = getprefRPSPASS('RPSPASS','csvfile');
-filelocator = getprefRPSPASS('RPSPASS','filelocatorSelected');
+% create figure multipler for completion progression
+switch CohortOutput
+    case 'on'
+        figMultiplier = 2;
+    case 'off'
+        figMultiplier = 1;
+end
 
 % if the filepath exists
 if ~isequal(filepath,0)
@@ -34,6 +37,7 @@ if ~isequal(filepath,0)
             pause(0.5);
         end
     end
+
     % put app at front
     figure(app.RPSPASS)
 
@@ -42,13 +46,13 @@ if ~isequal(filepath,0)
 
     % load .h5 combined files only
     SelectedFolderInfo = dir(fullfile(filepath,'*.h5'));
-    [Filenames, FileGroup, FileNo] = ObtainFilenames(natsort({SelectedFolderInfo.name}'), filelocator);
- 
+    [Filenames, FileGroup, FileNo] = ObtainFilenames(natsort({SelectedFolderInfo.name}'));
+
     if numel(Filenames) > 0
 
         % create table for reporting
         TableHeaders = {'Filename', 'Sample Information','Sample Source','Sample Isolation','Sample Diluent','Spike-in information','Cartridge ID','Instrument Sheath Fluid',...
-            'Diameter Calibration', 'Outlier Removal', 'Spike-in Removal', 'FCS Creation','MAT Creation','CSV Creation','JSON Creation',...
+            'Diameter Calibration', 'Outlier Removal', 'FCS Creation','MAT Creation','CSV Creation','JSON Creation',...
             'Unprocessed Total Events','Unprocessed Total Volume (pL)','Unprocessed Total Conc (mL^-1)',...
             'IndGate Non-spike-in Events','IndGate Spike-in Events','IndGate Total Volume (pL)','IndGate Sample Conc (mL^-1)','IndGate Spike-In Conc (mL^1)','IndGate Diameter Gate (nm)','IndGate Transit Time Gate (µs)',...
             'CoGate Non-spike-in Events','CoGate Spike-in Events','CoGate Total Volume (pL)','CoGate Sample Conc (mL^-1)','CoGate Spike-In Conc (mL^1)','CoGate Diameter Gate (nm)','CoGate Transit Time Gate (µs)',...
@@ -61,34 +65,28 @@ if ~isequal(filepath,0)
 
         %% process h5 files
         for i = 1:FileNo
-            % set current filename for exporting files in subscription
-            % finctionos
+            % set current filename for exporting files in subscript
+            % functions
             setprefRPSPASS('RPSPASS','CurrFile',Filenames{i})
 
+            % extract data from .h5 files for downstream processing
             [app,Data, Report] = ProcessH5File(app, filepath,Filenames{i}, Report, i, FileGroup);
 
-            % try % calibrate diameter
-            [Data, Stat, Report] = DiamCalibration(app, Data, i, Report);
-            % catch
-            %     Report(FileID,'Diameter Calibration') = {'Failed'};
-            % end
-
-
-       
-                    % try % remove outliers
-                    [Data,Report] = OutlierRemoval(Data, Report, i);
-                         % if debug mode is turned on, create an output directory
-            switch getprefRPSPASS('RPSPASS','debugSelected')
-                case 'on'
-                    %     Report(FileID,'Outlier Removal') = {'Passed'};
-                    % catch
-                    %     Report(FileID,'Outlier Removal') = {'Failed'};
-                    % end
-                    Debug_Plots(Data, 'OutlierRemoval')
-
+            try % calibrate diameter
+                [Data, Report] = DiamCalibration(app, Data, i, Report);
+            catch
+                Report(i,'Diameter Calibration') = {'Failed'};
             end
 
+            %             try % remove outliers
+            [Data,Report] = OutlierRemoval(Data, Report, i);
+            %                 Report(i,'Outlier Removal') = {'Passed'};
+            %             catch
+            %                 Report(i,'Outlier Removal') = {'Failed'};
+            %             end
 
+            % output outlier removal debug plots
+            Debug_Plots(Data, 'OutlierRemoval')
 
             if ~strcmp(Report{i,'Diameter Calibration'},'Failed')  % if diameter calibration passed
 
@@ -100,12 +98,6 @@ if ~isequal(filepath,0)
                 filename = ['Data_',num2str(i),'.mat'];
                 preferenceFolder_saveTempDir(filename,Data)
 
-                % update html status
-                if isempty(mode)
-                    app.HTML.Data = [num2str(round(100*(i/(FileNo*2)),0)),'%'];
-                else
-                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*(i/(FileNo*2)),1)),'%'];
-                end
             else
                 FailedFiles = [FailedFiles, i];
 
@@ -113,17 +105,15 @@ if ~isequal(filepath,0)
                 % this will speed up analysis and save memory
                 filename = ['Data_',num2str(i),'.mat'];
                 preferenceFolder_saveTempDir(filename,Data)
-                if isempty(mode)
-                    app.HTML.Data = [num2str(round(100*(i/(FileNo*2)),0)),'%'];
-                else
-                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*(i/(FileNo*2)),1)),'%'];
 
-                end
+            end
+            if isempty(mode)
+                app.HTML.Data = [num2str(round(100*(i/(FileNo*figMultiplier)),0)),'%'];
+            else
+                app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*(i/(FileNo*figMultiplier)),1)),'%'];
             end
         end
 
-return
-    
         %% process files for cohort analysis
         for i = 1:FileNo
             % load file from temporary directory
@@ -132,42 +122,44 @@ return
             setprefRPSPASS('RPSPASS','CurrFile',Filenames{i})
 
             if ~sum(i == FailedFiles)
+                % check if cohort analysis is turned on
+                switch CohortOutput
+                    case 'on'
+                        % check if sample failed calibration/outlier process and exclude
+                        if Data.fail == true
+                            status = false;
+                        else
+                            % perform gating
+                            [in,on] = inpolygon(Data.ttime, Data.diam, Gates.ttime, Gates.diam);
+                            Data.Coh_gate = or(in,on); % cohort gating index
 
-                % check if sample failed calibration/outlier process and exclude
-                if Data.fail == true
-                    status = false;
-                else
-                    % perform gating
-                    [in,on] = inpolygon(Data.ttime, Data.diam, Gates.ttime, Gates.diam);
-                    Data.Coh_gate = or(in,on); % cohort gating index
+                            % apply gating and output plots
+                            outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],'Cohort Gating',[replace(Filenames{i},'.','-'),'_QC.jpeg']);
+                            plot_QC_data(app,Data,outputPath, Data.Coh_gate)
+                        end
 
-                    % apply gating and output plots
-                    outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],'Cohort Gating',[replace(Filenames{i},'.','-'),'_QC.jpeg']);
-                    plot_QC_data(app,Data,outputPath, Data.Coh_gate)
                 end
-                
-                Report = ExportDatafileTypes(i, Filenames{i}, Data, timestamp, Report);
-             
-                if isempty(mode)
-                    % update html status
-                    app.HTML.Data = [num2str(round(100*((i+FileNo)/(FileNo*2)),0)),'%'];
-                else
-                    app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*((i+FileNo)/(FileNo*2)),1)),'%'];
-                end
-
                 % collate report information
-                [Report] = createReport(i, Report, Data, Gates);
+                [Report] = createReport(i, Report, Data);
 
+                % export selected data files
+                Report = ExportDatafileTypes(i, Filenames{i}, Data, timestamp, Report);
             else
-
                 % output plots that failed QC for inspection
                 plot_Failed_QC_data(Data)
+            end
+
+            % update html progress
+            if isempty(mode)
+                app.HTML.Data = [num2str(round(100*((i+FileNo)/(FileNo*figMultiplier)),0)),'%'];
+            else
+                app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*((i+FileNo)/(FileNo*figMultiplier)),1)),'%'];
             end
         end
 
         % export report
-        outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],[timestamp_filename,'RPSPASS Report.xlsx']);
-        writeReport(TableHeaders, Report, outputPath)
+        outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],[timestamp_filename,' RPSPASS Report.xlsx']);
+        writeReport(TableHeaders, Report, outputPath,Data)
 
         % open folder containing outputs
         if ismac()

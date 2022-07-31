@@ -1,6 +1,6 @@
-function [OutputFilenames, FileGroup, FileNo] = ObtainFilenames(InputFilenames, filelocator)
+function [OutputFilenames, FileGroup, FileNo] = ObtainFilenames(InputFilenames)
 
-switch filelocator
+switch getprefRPSPASS('RPSPASS','filelocatorSelected')
     case '_ss00'
         [Filenames, FileGroup, FileNo] = get_ss00(InputFilenames, '_ss00.h5');
         if isempty(Filenames)

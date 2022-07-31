@@ -9,7 +9,7 @@ if ~isequal(filepath,0)
     % load .h5 combined files only
     SelectedFolderInfo = dir(fullfile(filepath,'*.h5'));
     Filenames = {SelectedFolderInfo.name}';
-    [Filenames, FileGroup, FileNo] = ObtainFilenames(Filenames, filelocator);
+    [Filenames, FileGroup, FileNo] = ObtainFilenames(Filenames);
 
     if numel(Filenames) > 0
         % get user selected live file

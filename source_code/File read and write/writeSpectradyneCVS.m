@@ -1,9 +1,9 @@
-function writeSpectradyneCVS(app, Data, timestamp, filename)
+function writeSpectradyneCVS(Data, timestamp, filename)
 
 %% create header information
 
 % add software information to fcs hdr
-fcs_hdr.RPSPASS_Version = app.Version;
+fcs_hdr.RPSPASS_Version = getprefRPSPASS('RPSPASS','version');
 fcs_hdr.RPSPASS_Date = timestamp;
 
 % add nCS1 file info to fcs header
@@ -37,8 +37,12 @@ array = cell(size(data2write,1)+1, size(data2write,2));
 array(1,:) = VarWriteName(:,2)';
 array(2:end,:) = table2cell(data2write);
 
-% write data to csv file
-writecell(array,filename,'Sheet','Data')
+% export report to excel spreadsheet
+if ismac()
+    writecell(array,filename,'Sheet','Raw Data','UseExcel',false,'FileType','spreadsheet')
+elseif ispc()
+    writecell(array,filename,'Sheet','Raw Data','UseExcel',true,'FileType','spreadsheet')
+end
 
 % create metadata array from fcs header
 metadata(:,1) = fields(fcs_hdr);
@@ -52,9 +56,9 @@ for i = 1:size(metadata,1)
 end
 
 % write metadata to csv file
-writecell(metadata,filename,'Sheet','Metadata')
-
-
-
-
+if ismac()
+    writecell(metadata,filename,'Sheet','Metadata','UseExcel',false,'FileType','spreadsheet')
+elseif ispc()
+    writecell(metadata,filename,'Sheet','Metadata','UseExcel',true,'FileType','spreadsheet')
+end
 end

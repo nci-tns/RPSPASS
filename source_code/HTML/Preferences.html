@@ -39,8 +39,12 @@
 										.mat files
 									</label>
 									<label class="form-control">
-										<input type="checkbox" name="checkbox" id="csvfile" />
+										<input type="checkbox" name="checkbox" id="xlsxfile" />
 										.xlsx files
+									</label>
+									<label class="form-control">
+										<input type="checkbox" name="checkbox" id="jsonfile" />
+										.json files
 									</label>
 								</div>
 
@@ -58,10 +62,18 @@
 								</div>
 
 								<div class="inputs">
-
 									<p>Debug Mode:</p>
 									<select class="form-group form-control form-control-lg dropdown" name="debug"
 										id="debug">
+										<option>on</option>
+										<option>off</option>
+									</select>
+								</div>
+
+								<div class="inputs">
+									<p>Cohort Analysis:</p>
+									<select class="form-group form-control form-control-lg dropdown" name="cohortAnalysis"
+										id="cohortAnalysis">
 										<option>on</option>
 										<option>off</option>
 									</select>
@@ -109,20 +121,47 @@
 						<div class="titlerow" style="padding:0%; border: 0px;">
 							<h3>Outlier Removal</h3>
 						</div>
+						<div class="row">
+							<div class="inputs">
+								<p>Outlier Removal:</p>
+								<select class="form-group form-control form-control-lg dropdown"
+									name="outlierremoval" id="outlierremoval">
+									<option>on</option>
+									<option>off</option>
+								</select>
+							</div>
+							<div class="inputs">
 
+								<p>Removal Basis:</p>
+								<label class="form-control">
+									<input type="checkbox" name="checkbox" id="OutlierRemoval_Pressure" />
+									P1 Pressure
+								</label>
+								<label class="form-control">
+									<input type="checkbox" name="checkbox" id="OutlierRemoval_TransitTime" />
+									Transit Time
+								</label>
+								<label class="form-control">
+									<input type="checkbox" name="checkbox" id="OutlierRemoval_CV" />
+									CV
+								</label>
+								<label class="form-control">
+									<input type="checkbox" name="checkbox" id="OutlierRemoval_SI" />
+									SI
+								</label>
+								<label class="form-control">
+									<input type="checkbox" name="checkbox" id="OutlierRemoval_TTSN" />
+									S2N/TT
+								</label>
+							</div>
+						</div>
+
+						<div class="titlerow" style="padding:0%; border: 0px;">
+							<h4>Threshold Ranges</h4>
+						</div>
 						<div class="row">
 
 							<div class="column">
-
-								<div class="inputs">
-									<p>Outlier Removal:</p>
-									<select class="form-group form-control form-control-lg dropdown"
-										name="outlierremoval" id="outlierremoval">
-										<option>on</option>
-										<option>off</option>
-									</select>
-
-								</div>
 
 								<div class="inputs">
 									<p>CV Range:</p>
@@ -185,7 +224,8 @@
 			// write preferences as default values to inputs
 			document.getElementById("fcsfile").checked = initialData.fcsfile;
 			document.getElementById("matfile").checked = initialData.matfile;
-			document.getElementById("csvfile").checked = initialData.csvfile;
+			document.getElementById("xlsxfile").checked = initialData.xlsxfile;
+			document.getElementById("jsonfile").checked = initialData.jsonfile;
 
 			for (var i = 0; i < initialData.filelocatorNum; i++) {
 				document.getElementById("filelocator").options[i].selected = initialData.filelocatorSelection[i];
@@ -199,9 +239,19 @@
 				document.getElementById("diamcalitype").options[i].selected = initialData.diamcalitypeSelection[i];
 			}
 
+			for (var i = 0; i < initialData.cohortAnalysisNum; i++) {
+				document.getElementById("cohortAnalysis").options[i].selected = initialData.cohortAnalysisSelection[i];
+			}
+
 			for (var i = 0; i < initialData.debugNum; i++) {
 				document.getElementById("debug").options[i].selected = initialData.debugSelection[i];
 			}
+
+			document.getElementById("OutlierRemoval_Pressure").checked = initialData.OutlierRemoval_Pressure;
+			document.getElementById("OutlierRemoval_TransitTime").checked = initialData.OutlierRemoval_TransitTime;
+			document.getElementById("OutlierRemoval_CV").checked = initialData.OutlierRemoval_CV;
+			document.getElementById("OutlierRemoval_SI").checked = initialData.OutlierRemoval_SI;
+			document.getElementById("OutlierRemoval_TTSN").checked = initialData.OutlierRemoval_TTSN;
 
 			document.getElementById("DynamicCalSpikeInThresh").value = initialData.DynamicCalSpikeInThresh;
 			document.getElementById("StaticCalSpikeInThresh").value = initialData.StaticCalSpikeInThresh;
@@ -216,7 +266,8 @@
 				initialData.Response = "Save";
 				initialData.fcsfile = document.getElementById("fcsfile").checked;
 				initialData.matfile = document.getElementById("matfile").checked;
-				initialData.csvfile = document.getElementById("csvfile").checked;
+				initialData.xlsxfile = document.getElementById("xlsxfile").checked;
+				initialData.jsonfile = document.getElementById("jsonfile").checked;
 
 				let Selection = [];
 				for (var i = 0; i < initialData.filelocatorNum; i++) {
@@ -237,10 +288,22 @@
 				initialData.diamcalitypeSelection = Selection;
 
 				Selection = [];
+				for (var i = 0; i < initialData.cohortAnalysisNum; i++) {
+					Selection[i] = document.getElementById("cohortAnalysis").options[i].selected;
+				}
+				initialData.cohortAnalysisSelection = Selection;
+
+				Selection = [];
 				for (var i = 0; i < initialData.debugNum; i++) {
 					Selection[i] = document.getElementById("debug").options[i].selected;
 				}
 				initialData.debugSelection = Selection;
+
+				initialData.OutlierRemoval_Pressure = document.getElementById("OutlierRemoval_Pressure").checked;
+				initialData.OutlierRemoval_TransitTime = document.getElementById("OutlierRemoval_TransitTime").checked;
+				initialData.OutlierRemoval_CV = document.getElementById("OutlierRemoval_CV").checked;
+				initialData.OutlierRemoval_SI = document.getElementById("OutlierRemoval_SI").checked;
+				initialData.OutlierRemoval_TTSN = document.getElementById("OutlierRemoval_TTSN").checked;
 
 				initialData.DynamicCalSpikeInThresh = document.getElementById("DynamicCalSpikeInThresh").value;
 				initialData.StaticCalSpikeInThresh = document.getElementById("StaticCalSpikeInThresh").value;

@@ -79,7 +79,9 @@ Data.SpikeInGateMax = nan(numel(Data.acq_int),1); % determined maximum diameter 
 Data.SpikeInGateMin = nan(numel(Data.acq_int),1); % determined minimum diameter for spike-in gate
 Data.UngatedTotalEvents = size(Data.AcqID,1); % total number of detected events before outlier removal
 Data.EventID = 1:numel(Data.AcqID); % create a unique ID for each event for downstream indexing
-Data.Indices.NoiseInd = Data.signal2noise./Data.ttime<1; % index used for initial gating of detectable events
+Data.Indices.NoiseInd = Data.signal2noise./Data.ttime<1; % noise index
+Data.Indices.NotNoise = not(Data.Indices.NoiseInd); % event index
+Data.Indices.Unprocessed = true(size(Data.diam,1)); % event index
 
 % sample metadata
 cartstr = Data.Info{strcmp(Data.Info(:,1),'cartridge_class'),2};
@@ -101,6 +103,6 @@ Data.RPSPASS.DiamGateWidth = 10; % diameter window to perform peak find in nm
 Data.RPSPASS.MinSpikeInStart = 0.8; % minimum diameter to start search for spike in bead (percentage of true spike in diam)
 Data.RPSPASS.FailedAcq = false(1,Data.RPSPASS.MaxInt);
 Data.RPSPASS.FailedCriteria = cell(1, Data.RPSPASS.MaxInt);
-
+Data.RPSPASS.CohortGate = []; % create empty array for downstream use
 
 
