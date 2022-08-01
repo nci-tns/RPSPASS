@@ -28,7 +28,6 @@
 
 							<div class="column">
 								<div class="inputs">
-
 									<p>Default outputs:</p>
 									<label class="form-control">
 										<input type="checkbox" name="checkbox" id="fcsfile" />
@@ -47,7 +46,7 @@
 										.json files
 									</label>
 								</div>
-
+						
 							</div>
 
 							<div class="column">
@@ -74,6 +73,15 @@
 									<p>Cohort Analysis:</p>
 									<select class="form-group form-control form-control-lg dropdown" name="cohortAnalysis"
 										id="cohortAnalysis">
+										<option>on</option>
+										<option>off</option>
+									</select>
+								</div>
+
+								<div class="inputs">
+									<p>Parallel Computing:</p>
+									<select class="form-group form-control form-control-lg dropdown" name="ParallelComputing"
+										id="ParallelComputing" disabled>
 										<option>on</option>
 										<option>off</option>
 									</select>
@@ -247,6 +255,10 @@
 				document.getElementById("debug").options[i].selected = initialData.debugSelection[i];
 			}
 
+			for (var i = 0; i < initialData.ParallelComputingNum; i++) {
+				document.getElementById("ParallelComputing").options[i].selected = initialData.ParallelComputingSelection[i];
+			}
+
 			document.getElementById("OutlierRemoval_Pressure").checked = initialData.OutlierRemoval_Pressure;
 			document.getElementById("OutlierRemoval_TransitTime").checked = initialData.OutlierRemoval_TransitTime;
 			document.getElementById("OutlierRemoval_CV").checked = initialData.OutlierRemoval_CV;
@@ -298,6 +310,12 @@
 					Selection[i] = document.getElementById("debug").options[i].selected;
 				}
 				initialData.debugSelection = Selection;
+
+				Selection = [];
+				for (var i = 0; i < initialData.ParallelComputingNum; i++) {
+					Selection[i] = document.getElementById("ParallelComputing").options[i].selected;
+				}
+				initialData.ParallelComputingSelection = Selection;
 
 				initialData.OutlierRemoval_Pressure = document.getElementById("OutlierRemoval_Pressure").checked;
 				initialData.OutlierRemoval_TransitTime = document.getElementById("OutlierRemoval_TransitTime").checked;

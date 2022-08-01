@@ -200,11 +200,18 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
 
                         %% show outlier removed transit time / signal 2 noise vs diameter
                         nexttile
+                     testInd = Data.TT2SN() > 0.1 & Data.TT2SN < 0.5 & ~Data.outliers;
+                        threshold = mean(Data.diam(testInd))+(std(Data.diam(testInd))*2);
+                        line([0.01 100],[threshold threshold],'color','r','linewidth',1)
+                        
+                         hold on
+
                         histogram2(Data.TT2SN(~Data.outliers),Data.diam(~Data.outliers),'XBinEdges',Bins.TTSN,"YBinEdges",Bins.diam,"DisplayStyle","tile")
-                        hold on
+                       
+   
+
                         fill(10.^[-2 -2 0 0],...
                             [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam)], [0.5 0 0], 'facealpha',0.2,'EdgeColor','none')
-
                         fill(10.^([0 0 2 2]),...
                             [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam)], [0 0.5 0], 'facealpha',0.2,'EdgeColor','none')
                         text(10^(-2+(4*0.05)),(max(Bins.diam)-min(Bins.diam))*0.9,'Outlers Removed','FontWeight','bold')
@@ -215,7 +222,7 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
 
                         %% show histogram of signal 2 noise vs diameter
                         nexttile
-%                         histogram(Data.TT2SN,Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','k')
+                        histogram(Data.TT2SN(~Data.outliers),Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','k')
                         hold on
                         histogram(Data.TT2SN(Data.Indices.Events_OutlierSpikeinRemoved),Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','b')
 %                         histogram(Data.TT2SN(Data.Indices.SpikeIn_OutlierRemoved),Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','r')

@@ -1,4 +1,4 @@
-function setprefFCMPASS(PrefType, prefName, prefValue)
+function setprefRPSPASS(PrefType, prefName, prefValue)
 
 username = char(java.lang.System.getProperty('user.name'));
 

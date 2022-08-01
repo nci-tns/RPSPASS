@@ -65,6 +65,10 @@ if ~isequal(filepath,0)
 
         %% process h5 files
         for i = 1:FileNo
+
+            % turn on parallel computing
+            Parallel_Computing()
+
             % set current filename for exporting files in subscript
             % functions
             setprefRPSPASS('RPSPASS','CurrFile',Filenames{i})
@@ -137,6 +141,12 @@ if ~isequal(filepath,0)
                             outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],'Cohort Gating',[replace(Filenames{i},'.','-'),'_QC.jpeg']);
                             plot_QC_data(app,Data,outputPath, Data.Coh_gate)
                         end
+                        % update html progress
+                        if isempty(mode)
+                            app.HTML.Data = [num2str(round(100*((i+FileNo)/(FileNo*figMultiplier)),0)),'%'];
+                        else
+                            app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*((i+FileNo)/(FileNo*figMultiplier)),1)),'%'];
+                        end
 
                 end
                 % collate report information
@@ -149,12 +159,7 @@ if ~isequal(filepath,0)
                 plot_Failed_QC_data(Data)
             end
 
-            % update html progress
-            if isempty(mode)
-                app.HTML.Data = [num2str(round(100*((i+FileNo)/(FileNo*figMultiplier)),0)),'%'];
-            else
-                app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*((i+FileNo)/(FileNo*figMultiplier)),1)),'%'];
-            end
+
         end
 
         % export report

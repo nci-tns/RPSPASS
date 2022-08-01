@@ -15,7 +15,7 @@ Prefs = {...
 
     'OutlierRemoval_Pressure',1; ...       % perform outlier removal based on P1 pressure [0=off, 1=on]
     'OutlierRemoval_TransitTime',1; ...    % perform outlier removal based on transit time [0=off, 1=on]
-    'OutlierRemoval_CV',1; ...             % perform outlier removal based on CV [0=off, 1=on]
+    'OutlierRemoval_CV',0; ...             % perform outlier removal based on CV [0=off, 1=on]
     'OutlierRemoval_SI',1; ...             % perform outlier removal based on SI [0=off, 1=on]
     'OutlierRemoval_TTSN',1; ...           % perform outlier removal based on S2N over Transit time [0=off, 1=on]
 
@@ -57,7 +57,12 @@ Prefs = {...
     'debugOptions',{'on','off'};...       % debug mode
     'debugSelection', [true; false];...   % logic gate for debug selection in pref panel
     'debugNum',[];...                     % num of options for debug selection in pref panel
-    'debugSelected','';...                % selecteddebug selection in pref panel
+    'debugSelected','';...                % selected debug selection in pref panel
+
+    'ParallelComputingOptions',{'on','off'};...       % parallel computing of outlier removal
+    'ParallelComputingSelection', [false; true];...   % logic gate for parallel computing selection in pref panel
+    'ParallelComputingNum',[];...                     % num of options for parallel computing selection in pref panel
+    'ParallelComputingSelected','';...                % selected parallel computing selection in pref panel
 
     'Response',''};                 % response to button pressing for communication between HTML & MATLAB
 
@@ -85,6 +90,10 @@ for i = 1:size(Prefs,1)
     elseif strcmp(Prefs{i,1},'debugNum')
         N = numel(getprefRPSPASS('RPSPASS','debugOptions'));
         setprefRPSPASS('RPSPASS','debugNum', N)
+
+    elseif strcmp(Prefs{i,1},'ParallelComputingNum')
+        N = numel(getprefRPSPASS('RPSPASS','ParallelComputingOptions'));
+        setprefRPSPASS('RPSPASS','ParallelComputingNum', N)
 
     elseif strcmp(Prefs{i,1},'diamcalitypeNum')
         N = numel(getprefRPSPASS('RPSPASS','diamcalitypeOptions'));
@@ -120,6 +129,11 @@ for i = 1:size(Prefs,1)
         Options = getprefRPSPASS('RPSPASS','debugOptions');
         Selection = getprefRPSPASS('RPSPASS','debugSelection');
         setprefRPSPASS('RPSPASS','debugSelected', Options{Selection})
+
+    elseif strcmp(Prefs{i,1},'ParallelComputingSelected')
+        Options = getprefRPSPASS('RPSPASS','ParallelComputingOptions');
+        Selection = getprefRPSPASS('RPSPASS','ParallelComputingSelection');
+        setprefRPSPASS('RPSPASS','ParallelComputingSelected', Options{Selection})
     end
 
 end

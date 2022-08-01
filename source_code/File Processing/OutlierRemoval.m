@@ -55,19 +55,6 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
         % get running pressures
         P1_Pressure(:) = Data.SetPs(:,1);
 
-        % set default outlier gating
-        Best.index(:) = false(numel(Data.AcqIDUq),1);
-        Best.num = sum(Best.index);
-        Best.Ps = [];
-        Best.TT = [];
-        Best.CV = [];
-        Best.SI = [];
-
-        index.pressure = [];
-        index.TT = [];
-        index.CV = [];
-        index.SI = [];
-
         % check if P1 pressure outlier removal is turned on
         if getprefRPSPASS('RPSPASS','OutlierRemoval_Pressure') == 1
             iteration.pressure(:) = unique(P1_Pressure);
@@ -79,6 +66,7 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
         % check if TT outlier removal is turned on
         if getprefRPSPASS('RPSPASS','OutlierRemoval_TransitTime') == 1
             iteration.TT = floor(min(SpikeInTT)) : 0.2 : ceil(max(SpikeInTT));
+
             for i = 1:numel(iteration.TT ) % cycle through each transit time gate
                 index.TT(:,i) = SpikeInTT >= iteration.TT(i) & SpikeInTT <= iteration.TT(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_TT');
             end
@@ -111,9 +99,7 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
         % obtain fields being processed
         IndexFields = fields(iteration);
         test.fieldNo = numel(IndexFields); % obtain number of fields
-
-        % save to local variable for faster processing in recursive loop
-        test.thresholdSets = getprefRPSPASS('RPSPASS','Threshold_Sets'); 
+        test.thresholdSets = getprefRPSPASS('RPSPASS','Threshold_Sets');
 
         % remove any indices that have less than the number of threshold
         % sets within the threshold range for that parameter
@@ -125,71 +111,8 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
         end
 
         index.uniquecomb = combvec(index.array{:})'; % derive all possible combinations of each index field
-        Best.NoCombs = size(index.uniquecomb,1); % get total number of unique combinations
 
-%         % test each unique combination to maximize sets meeting threshold
-%         % criteria within range
-%         for i = 1:Best.NoCombs
-%             test.array = [];
-%             proceed = true;
-% 
-%             % build testing array for each unique combination
-%             for ii = 1:numel(IndexFields) 
-%                 test.array = [test.array, index.(IndexFields{ii})(:,index.uniquecomb(i,ii))];
-%                 if sum(sum(test.array,2) == size(test.array,2)) < test.thresholdSets
-%                     proceed = false;
-%                     break
-%                 end
-%             end
-% 
-%             if proceed == true
-%                 test.index = sum(test.array,2)==test.fieldNo;
-%                 test.events = sum(test.index);
-% 
-%                 % test array has more passing sets than current best save it
-%                 if test.events > Best.num 
-%                     Best.index = test.index;
-%                     Best.num = sum(Best.index);
-%                     Best.uniqueComb = index.uniquecomb(i,:);
-%                 end
-%             end
-%         end
-
-        %%
-        num = 0;
-tic
-        parfor i = 1:Best.NoCombs
-           array = [];
-            proceed = true;
-
-            % build testing array for each unique combination
-            for ii = 1:numel(IndexFields) 
-               array = [array, index.(IndexFields{ii})(:,index.uniquecomb(i,ii))];
-                if sum(sum(array,2) == size(array,2)) < test.thresholdSets
-                    proceed = false;
-                    break
-                end
-            end
-
-            if proceed == true
-                test_index = sum(array,2)==test.fieldNo;
-                test_events = sum(test_index);
-
-                % test array has more passing sets than current best save it
-                if test_events > num 
-                    Best_index = test_index;
-                    Best_num = sum(Best_index);
-                    Best_uniqueComb = index.uniquecomb(i,:);
-                end
-            end
-        end
-toc
-        %%
-
-        % obtain threshold values for each tested criteria
-        for ii = 1:numel(IndexFields)
-            Best.(IndexFields{ii}) = iteration.(IndexFields{ii})(Best.uniqueComb(ii));
-        end
+        [Best]=OutlierRemoval_ProcessCombinations(iteration, index, IndexFields, test);
 
         % remove spike-in to non-spikein events that using median absolute
         % deviation
