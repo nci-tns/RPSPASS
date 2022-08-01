@@ -127,33 +127,64 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
         index.uniquecomb = combvec(index.array{:})'; % derive all possible combinations of each index field
         Best.NoCombs = size(index.uniquecomb,1); % get total number of unique combinations
 
-        % test each unique combination to maximize sets meeting threshold
-        % criteria within range
-        for i = 1:Best.NoCombs
-            test.array = [];
-            test.proceed = true;
+%         % test each unique combination to maximize sets meeting threshold
+%         % criteria within range
+%         for i = 1:Best.NoCombs
+%             test.array = [];
+%             proceed = true;
+% 
+%             % build testing array for each unique combination
+%             for ii = 1:numel(IndexFields) 
+%                 test.array = [test.array, index.(IndexFields{ii})(:,index.uniquecomb(i,ii))];
+%                 if sum(sum(test.array,2) == size(test.array,2)) < test.thresholdSets
+%                     proceed = false;
+%                     break
+%                 end
+%             end
+% 
+%             if proceed == true
+%                 test.index = sum(test.array,2)==test.fieldNo;
+%                 test.events = sum(test.index);
+% 
+%                 % test array has more passing sets than current best save it
+%                 if test.events > Best.num 
+%                     Best.index = test.index;
+%                     Best.num = sum(Best.index);
+%                     Best.uniqueComb = index.uniquecomb(i,:);
+%                 end
+%             end
+%         end
+
+        %%
+        num = 0;
+tic
+        parfor i = 1:Best.NoCombs
+           array = [];
+            proceed = true;
 
             % build testing array for each unique combination
             for ii = 1:numel(IndexFields) 
-                test.array = [test.array, index.(IndexFields{ii})(:,index.uniquecomb(i,ii))];
-                if sum(sum(test.array,2) == size(test.array,2)) < test.thresholdSets
-                    test.proceed = false;
+               array = [array, index.(IndexFields{ii})(:,index.uniquecomb(i,ii))];
+                if sum(sum(array,2) == size(array,2)) < test.thresholdSets
+                    proceed = false;
                     break
                 end
             end
 
-            if test.proceed == true
-                test.index = sum(test.array,2)==test.fieldNo;
-                test.events = sum(test.index);
+            if proceed == true
+                test_index = sum(array,2)==test.fieldNo;
+                test_events = sum(test_index);
 
                 % test array has more passing sets than current best save it
-                if test.events > Best.num 
-                    Best.index = test.index;
-                    Best.num = sum(Best.index);
-                    Best.uniqueComb = index.uniquecomb(i,:);
+                if test_events > num 
+                    Best_index = test_index;
+                    Best_num = sum(Best_index);
+                    Best_uniqueComb = index.uniquecomb(i,:);
                 end
             end
         end
+toc
+        %%
 
         % obtain threshold values for each tested criteria
         for ii = 1:numel(IndexFields)

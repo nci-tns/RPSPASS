@@ -124,7 +124,6 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
                             plot(xData(Best.index), OutlierRemoval.CV(Best.index), 'o','markerfacecolor','b','MarkerEdgeColor','none') % show kept events
                             % check if CV outlier removal is turned on
                             if getprefRPSPASS('RPSPASS','OutlierRemoval_CV') == 1
-                                iteration.CV = min(CVs):0.1:ceil(max(CVs));
                                 fill([0 0 max(Bins.time) max(Bins.time)],[Best.CV repmat(Best.CV++getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV'),1,2) Best.CV],'g','facealpha',0.1) % show SI gate
                             end
                         end
@@ -216,10 +215,10 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
 
                         %% show histogram of signal 2 noise vs diameter
                         nexttile
-                        histogram(Data.TT2SN,Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','k')
+%                         histogram(Data.TT2SN,Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','k')
                         hold on
                         histogram(Data.TT2SN(Data.Indices.Events_OutlierSpikeinRemoved),Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','b')
-                        histogram(Data.TT2SN(Data.Indices.SpikeIn_OutlierRemoved),Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','r')
+%                         histogram(Data.TT2SN(Data.Indices.SpikeIn_OutlierRemoved),Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','r')
                         formatPlot('',[],Bins.TTSN)
                         set(gca,'xscale','log')
                         ylabel('Count')
