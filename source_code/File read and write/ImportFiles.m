@@ -67,7 +67,7 @@ if ~isequal(filepath,0)
         for i = 1:FileNo
 
             % turn on parallel computing
-            Parallel_Computing()
+%             Parallel_Computing()
 
             % set current filename for exporting files in subscript
             % functions

@@ -164,12 +164,16 @@ switch Data.RPSPASS.SpikeInUsed
 end
 
 Data.SpikeInInd = Data.diam >= Data.SpikeInGateMinNorm & Data.diam <= Data.SpikeInGateMaxNorm;
+
 % create raw indexing variables of processed data for downstream use and export
 Data.Indices.Events_SpikeInRemoved = sum([~Data.SpikeInInd(:), ~Data.Indices.NoiseInd(:)],2) == 2;
 
 switch Data.RPSPASS.SpikeInUsed
     case 'Yes'
         Data.Indices.Events_OutlierRemoved = sum([~Data.outliers, ~Data.Indices.NoiseInd(:)],2) == 2;
+        NoiseTTSN = Data.TT2SN() > 0.1 & Data.TT2SN < 0.5 & ~Data.outliers;
+        threshold = mean(Data.diam(NoiseTTSN))+(std(Data.diam(NoiseTTSN))*2);
+        Data.Indices.Events_OutlierRemovedDiamGate = and(Data.Indices.Events_OutlierRemoved, Data.diam>threshold);
         Data.Indices.Events_OutlierSpikeinRemoved = sum([~Data.SpikeInInd, ~Data.outliers, ~Data.Indices.NoiseInd(:)],2) == 3;
         Data.Indices.SpikeIn_OutlierRemoved = sum([Data.SpikeInInd, ~Data.outliers, ~Data.Indices.NoiseInd(:)],2) == 3;
 end

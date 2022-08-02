@@ -117,7 +117,7 @@ ylabel('Count')
 xlim([min(Bins.diam) max(Bins.diam)])
 
 %% final resulting data
-ind = Data.Indices.Events_OutlierSpikeinRemoved;
+ind = Data.Indices.Events_OutlierRemovedDiamGate;
 nexttile(plotInd(5),[plotheight,1])
 histogram2(Data.time(ind), Data.diam(ind),'XBinEdges',Bins.time,"YBinEdges",Bins.diam,"DisplayStyle","tile")
 set(gca,'GridLineStyle','none')

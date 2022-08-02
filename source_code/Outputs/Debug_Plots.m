@@ -200,8 +200,7 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
 
                         %% show outlier removed transit time / signal 2 noise vs diameter
                         nexttile
-                     testInd = Data.TT2SN() > 0.1 & Data.TT2SN < 0.5 & ~Data.outliers;
-                        threshold = mean(Data.diam(testInd))+(std(Data.diam(testInd))*2);
+                
                         line([0.01 100],[threshold threshold],'color','r','linewidth',1)
                         
                          hold on
