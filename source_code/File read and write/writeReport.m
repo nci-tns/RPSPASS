@@ -31,10 +31,10 @@ end
 % header names to be included in written table
 Headers.RPSPASS_Summary = {'Filename', 'Diameter Calibration', 'Outlier Removal', 'Noise Removal', 'FCS Creation','CSV Creation','MAT Creation',};
 Headers.Metadata = {'Filename','Sample Information','Sample Source','Sample Isolation','Sample Diluent','Spike-in information','Cartridge ID','Instrument Sheath Fluid'};
-Headers.IndGate = {'Filename','Unprocessed Total Events','Unprocessed Total Volume (pL)','Unprocessed Total Conc (mL^-1)', 'IndGate Non-spike-in Events','IndGate Spike-in Events','IndGate Total Volume (pL)','IndGate Sample Conc (mL^-1)','IndGate Spike-In Conc (mL^1)','IndGate Diameter Gate (nm)','IndGate Transit Time Gate (µs)'};
+Headers.IndGate = {'Filename','Unprocessed Total Events','Unprocessed Total Volume (pL)','Unprocessed Total Conc Mean (mL^-1)','Unprocessed Total Conc SD (mL^-1)', 'IndGate Non-spike-in Events','IndGate Spike-in Events','IndGate Total Volume (pL)','IndGate Sample Conc Mean (mL^-1)','IndGate Sample Conc SD (mL^-1)','IndGate Spike-In Conc Mean (mL^-1)','IndGate Spike-In Conc SD (mL^-1)'};
 switch getprefRPSPASS('RPSPASS','cohortAnalysisSelected')
     case 'on'
-        Headers.CohGate = {'Filename','Unprocessed Total Events','Unprocessed Total Volume (pL)','Unprocessed Total Conc (mL^-1)','CoGate Non-spike-in Events','CoGate Spike-in Events','CoGate Total Volume (pL)','CoGate Sample Conc (mL^-1)','CoGate Spike-In Conc (mL^1)','CoGate Diameter Gate (nm)','CoGate Transit Time Gate (µs)'};
+        Headers.CohGate = {'Filename','Unprocessed Total Events','Unprocessed Total Volume (pL)','Unprocessed Total Conc Mean (mL^-1)','Unprocessed Total Conc SD (mL^-1)','CoGate Non-spike-in Events','CoGate Spike-in Events','CoGate Total Volume (pL)','CoGate Sample Conc Mean (mL^-1)','CoGate Sample Conc SD (mL^-1)','CoGate Spike-In Conc Mean (mL^-1)','CoGate Spike-In Conc SD (mL^-1)'};
 end
 
 % get unique field names for indexing export loop

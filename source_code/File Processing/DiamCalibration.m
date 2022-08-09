@@ -107,6 +107,7 @@ switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
             else
                 Report(FileID,'Diameter Calibration')  = {'Failed: too few spike-in events'};
             end
+            Report(FileID,'Diameter Calibration')  = {'Failed: too few spike-in events'};
         end
 
 end

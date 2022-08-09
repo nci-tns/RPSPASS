@@ -26,6 +26,11 @@ if strcmp(PrefObj.Response, 'Save')
             Selection = PrefObj.diamcalitypeSelection;
             setprefRPSPASS('RPSPASS','diamcalitypeSelected', Options{Selection})
 
+        elseif strcmp(fields{i},'diamprecisionSelected')
+            Options = PrefObj.diamprecisionOptions;
+            Selection = PrefObj.diamprecisionSelection;
+            setprefRPSPASS('RPSPASS','diamprecisionSelected', Options{Selection})
+
         elseif strcmp(fields{i},'cohortAnalysisSelected')
             Options = PrefObj.cohortAnalysisOptions;
             Selection = PrefObj.cohortAnalysisSelection;
@@ -41,7 +46,9 @@ if strcmp(PrefObj.Response, 'Save')
                 strcmp(fields{i},'Threshold_SpikeIn_CV') || ...
                 strcmp(fields{i},'Threshold_SpikeIn_SI') || ...
                 strcmp(fields{i},'Threshold_SpikeIn_TT') || ...
-                strcmp(fields{i},'Threshold_SpikeIn_TTSN')
+                strcmp(fields{i},'Threshold_SpikeIn_TTSN') || ...
+                strcmp(fields{i},'CohortAnalysis_MinTTSN_Noise') || ...
+                strcmp(fields{i},'CohortAnalysis_MinTTSN_Events')
 
             setprefRPSPASS('RPSPASS',fields{i}, str2num(PrefObj.(fields{i})))
 

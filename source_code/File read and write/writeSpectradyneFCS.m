@@ -10,7 +10,7 @@ if size(data,2) ~= length(marker_names) % put the data matrix back to what flow 
 end
 
 % Required Keywords
-fcsheader_main=['\$BEGINANALYSIS\0\$ENDANALYSIS\0\$BEGINSTEXT\0\$ENDSTEXT\0\$NEXTDATA\0\'];
+fcsheader_main = ['\$BEGINANALYSIS\0\$ENDANALYSIS\0\$BEGINSTEXT\0\$ENDSTEXT\0\$NEXTDATA\0\'];
 fcsheader_main = [fcsheader_main,'$TOT\',num2str(size(data,1)),'\']; % number of cells/events
 fcsheader_main = [fcsheader_main,'$PAR\',num2str(size(data,2)),'\']; % number of channels
 

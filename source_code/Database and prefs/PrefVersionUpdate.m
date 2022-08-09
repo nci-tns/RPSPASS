@@ -25,6 +25,9 @@ Prefs = {...
     'Threshold_SpikeIn_TT', 5;...   % range of transit time gate range in µs
     'Threshold_SpikeIn_TTSN',1.5;... % range of signal2noise/transit time threshold
     
+    'CohortAnalysis_MinTTSN_Events',0.5;... % range of signal2noise/transit time threshold
+    'CohortAnalysis_MinTTSN_Noise',0.1;... % range of signal2noise/transit time threshold
+
     'CalibrationMethod', 'Kernel';...   % spike in bead fitting method
     'DynamicCalSpikeInThresh',10;...    % min spike-in events to perform dynamic calibration
     'StaticCalSpikeInThresh',50;...     % min spike-in events to perform static calibration
@@ -45,9 +48,14 @@ Prefs = {...
     'outlierremovalSelected','';...                % selected outlier removal selection in pref panel
 
     'diamcalitypeOptions',{'dynamic','static'};...
-    'diamcalitypeSelection', [true; false];...   % logic gate for outlier selection in pref panel
-    'diamcalitypeNum',[];...                     % num of options for outlier selection in pref panel
-    'diamcalitypeSelected','';...                % num of options for outlier selection in pref panel
+    'diamcalitypeSelection', [true; false];...   % logic gate for diam calibration type selection in pref panel
+    'diamcalitypeNum',[];...                     % num of options for diam calibration type in pref panel
+    'diamcalitypeSelected','';...                % num of options for diam calibration type in pref panel
+
+    'diamprecisionOptions',{'Spectradyne','RPSPASS'};...
+    'diamprecisionSelection', [false; true];...   % logic gate for diam calibration precision in pref panel
+    'diamprecisionNum',[];...                     % num of options for diam calibration precision in pref panel
+    'diamprecisionSelected','';...                % num of options for diam calibration precision in pref panel
 
     'cohortAnalysisOptions',{'on','off'};...       % debug mode
     'cohortAnalysisSelection', [true; false];...   % logic gate for debug selection in pref panel
@@ -99,6 +107,10 @@ for i = 1:size(Prefs,1)
         N = numel(getprefRPSPASS('RPSPASS','diamcalitypeOptions'));
         setprefRPSPASS('RPSPASS','diamcalitypeNum', N)
 
+    elseif strcmp(Prefs{i,1},'diamprecisionNum')
+        N = numel(getprefRPSPASS('RPSPASS','diamprecisionOptions'));
+        setprefRPSPASS('RPSPASS','diamprecisionNum', N)
+
     %% selections, must be followed by the num
     elseif strcmp(Prefs{i,1},'filelocatorSelected')
         Options = getprefRPSPASS('RPSPASS','filelocatorOptions');
@@ -119,6 +131,11 @@ for i = 1:size(Prefs,1)
         Options = getprefRPSPASS('RPSPASS','diamcalitypeOptions');
         Selection = getprefRPSPASS('RPSPASS','diamcalitypeSelection');
         setprefRPSPASS('RPSPASS','diamcalitypeSelected', Options{Selection})
+
+    elseif strcmp(Prefs{i,1},'diamprecisionSelected')
+        Options = getprefRPSPASS('RPSPASS','diamprecisionOptions');
+        Selection = getprefRPSPASS('RPSPASS','diamprecisionSelection');
+        setprefRPSPASS('RPSPASS','diamprecisionSelected', Options{Selection})
 
     elseif strcmp(Prefs{i,1},'cohortAnalysisSelected')
         Options = getprefRPSPASS('RPSPASS','cohortAnalysisOptions');

@@ -104,9 +104,9 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
         % remove any indices that have less than the number of threshold
         % sets within the threshold range for that parameter
         for i = 1:numel(IndexFields)
-            remove = sum(index.(IndexFields{1}),1) < test.thresholdSets; 
+            remove = sum(index.(IndexFields{1}),1) < test.thresholdSets;
             iteration.(IndexFields{i})(remove) = [];
-            index.(IndexFields{i})(remove,:) = []; 
+            index.(IndexFields{i})(remove,:) = [];
             index.array{i} = 1:size(index.(IndexFields{i}),2); % create an array for each unique index field
         end
 
@@ -148,7 +148,10 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
 
     otherwise
         Report(FileID,'Outlier Removal') = {'Off'};
+        Data.outliers = false(size(Data.AcqID)); % save per event failed acquisitions
+        Data.Indices.NotOutliers = true(size(Data.AcqID)); % save per event passed acquisitions
 end
+
 % create normalize gate for removing spike-in bead and reporting statistics
 % based on spike-in exclusion
 switch Data.RPSPASS.SpikeInUsed
@@ -166,16 +169,27 @@ end
 Data.SpikeInInd = Data.diam >= Data.SpikeInGateMinNorm & Data.diam <= Data.SpikeInGateMaxNorm;
 
 % create raw indexing variables of processed data for downstream use and export
-Data.Indices.Events_SpikeInRemoved = sum([~Data.SpikeInInd(:), ~Data.Indices.NoiseInd(:)],2) == 2;
+Data.Indices.Events_OutlierRemoved = sum([~Data.outliers, ~Data.Indices.NoiseInd(:)],2) == 2;
 
+% create gating indices for downstream use
 switch Data.RPSPASS.SpikeInUsed
     case 'Yes'
-        Data.Indices.Events_OutlierRemoved = sum([~Data.outliers, ~Data.Indices.NoiseInd(:)],2) == 2;
-        NoiseTTSN = Data.TT2SN() > 0.1 & Data.TT2SN < 0.5 & ~Data.outliers;
-        threshold = mean(Data.diam(NoiseTTSN))+(std(Data.diam(NoiseTTSN))*2);
-        Data.Indices.Events_OutlierRemovedDiamGate = and(Data.Indices.Events_OutlierRemoved, Data.diam>threshold);
+        Data.Indices.Events_SpikeInRemoved = sum([~Data.SpikeInInd(:), ~Data.Indices.NoiseInd(:)],2) == 2;
+        
         Data.Indices.Events_OutlierSpikeinRemoved = sum([~Data.SpikeInInd, ~Data.outliers, ~Data.Indices.NoiseInd(:)],2) == 3;
         Data.Indices.SpikeIn_OutlierRemoved = sum([Data.SpikeInInd, ~Data.outliers, ~Data.Indices.NoiseInd(:)],2) == 3;
+        
+        NoiseTTSN = Data.TT2SN > getprefRPSPASS('RPSPASS','CohortAnalysis_MinTTSN_Noise') ....
+            & Data.TT2SN < getprefRPSPASS('RPSPASS','CohortAnalysis_MinTTSN_Events') & ~Data.outliers ...
+            & Data.diam < Data.SpikeInGateMinNorm;
+
+        Data.Threshold.diam = mean(Data.diam(NoiseTTSN))+(std(Data.diam(NoiseTTSN))*2);
+
+        Data.Indices.Events_OutlierRemovedDiamGate = sum([~Data.outliers(:),...
+            Data.TT2SN(:)>getprefRPSPASS('RPSPASS','CohortAnalysis_MinTTSN_Events'),...
+            Data.diam(:)>Data.Threshold.diam],2)==3;
+
+        Data.Indices.Events_OutlierSpikeinRemovedDiamGate = and(Data.Indices.Events_OutlierRemovedDiamGate, ~Data.SpikeInInd(:));
 end
 
 

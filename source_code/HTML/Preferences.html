@@ -46,7 +46,6 @@
 											.json files
 										</label>
 									</div>
-
 								</div>
 
 								<div class="column">
@@ -70,15 +69,6 @@
 									</div>
 
 									<div class="inputs">
-										<p>Cohort Analysis:</p>
-										<select class="form-group form-control form-control-lg dropdown"
-											name="cohortAnalysis" id="cohortAnalysis">
-											<option>on</option>
-											<option>off</option>
-										</select>
-									</div>
-
-									<div class="inputs">
 										<p>Parallel Computing:</p>
 										<select class="form-group form-control form-control-lg dropdown"
 											name="ParallelComputing" id="ParallelComputing" disabled>
@@ -93,35 +83,39 @@
 
 						<button type="button" class="collapsible">Diameter Calibration</button>
 						<div class="content">
+							
+							<div class="row">
+								<div class="inputs">
+									<p>Diam Calibration:</p>
+									<select class="form-group form-control form-control-lg dropdown" name="diamcalitype"
+										id="diamcalitype">
+										<option>dynamic</option>
+										<option>static</option>
+									</select>
+								</div>
+
+								<div class="inputs">
+									<p>Scaling Precision:</p>
+									<select class="form-group form-control form-control-lg dropdown" name="diamprecision"
+										id="diamprecision">
+										<option>Spectradyne</option>
+										<option>RPSPASS</option>
+									</select>
+								</div>
+							</div>
+
 							<div class="row">
 
-								<div class="column">
-									<div class="inputs">
-
-										<p>Diam Calibration:</p>
-										<select class="form-group form-control form-control-lg dropdown"
-											name="diamcalitype" id="diamcalitype">
-											<option>dynamic</option>
-											<option>static</option>
-										</select>
-									</div>
-
+								<div class="inputs">
+									<p>Dynamic Event Limit:</p>
+									<input class="form-control" type="number" id="DynamicCalSpikeInThresh">
 								</div>
 
-								<div class="column">
-									<div class="inputs">
-
-										<p>Dynamic Event Limit:</p>
-										<input class="form-control" type="number" id="DynamicCalSpikeInThresh">
-									</div>
-
-									<div class="inputs">
-
-										<p>Static Event Limit:</p>
-										<input class="form-control" type="number" id="StaticCalSpikeInThresh">
-									</div>
-
+								<div class="inputs">
+									<p>Static Event Limit:</p>
+									<input class="form-control" type="number" id="StaticCalSpikeInThresh">
 								</div>
+
 							</div>
 						</div>
 
@@ -137,6 +131,7 @@
 										<option>off</option>
 									</select>
 								</div>
+
 								<div class="inputs">
 
 									<p>Removal Basis:</p>
@@ -197,29 +192,63 @@
 
 								</div>
 							</div>
+						</div>
 
-							<div class="col-lg-12">
-								<form id="pref-form" action="#" method="post" role="form" style="display: block;">
-									<div class="col-sm-8 col-sm-offset-2">
-										<button type="button" name="login-submit" id="reset" tabindex="4"
-											class="form-control btn btn-login" onclick="">Reset</button>
+						
+						<button type="button" class="collapsible">Cohort Analysis</button>
+						<div class="content">
+							
+							<div class="row">
+								<div class="inputs">
+									<div class="inputs">
+										<p>Cohort Analysis:</p>
+										<select class="form-group form-control form-control-lg dropdown"
+											name="cohortAnalysis" id="cohortAnalysis">
+											<option>on</option>
+											<option>off</option>
+										</select>
 									</div>
-								</form>
+								</div>
 							</div>
 
-							<div class="col-lg-12">
-								<form id="pref-form" action="#" method="post" role="form"
-									style="display: block; padding-top: 15px">
-									<div class="col-sm-8 col-sm-offset-2">
-										<button type="button" name="login-submit" id="login-submit" tabindex="4"
-											class="form-control btn btn-login" onclick="">Save</button>
-									</div>
-								</form>
+							<div class="row">
+
+								<div class="inputs">
+									<p>Min Sample S2NTT:</p>
+									<input class="form-control" type="number" id="CohortAnalysis_MinTTSN_Events">
+								</div>
+
+								<div class="inputs">
+									<p>Min Noise S2NTT:</p>
+									<input class="form-control" type="number" id="CohortAnalysis_MinTTSN_Noise">
+								</div>
+
 							</div>
 						</div>
 					</div>
 
+					<div style="padding: 15px;">
+						<div class="col-lg-12">
+							<form id="pref-form" action="#" method="post" role="form" style="display: block;">
+								<div class="col-sm-8 col-sm-offset-2">
+									<button type="button" name="login-submit" id="reset" tabindex="4"
+										class="form-control btn btn-login" onclick="">Reset</button>
+								</div>
+							</form>
+						</div>
+
+						<div class="col-lg-12">
+							<form id="pref-form" action="#" method="post" role="form"
+								style="display: block; padding-top: 15px">
+								<div class="col-sm-8 col-sm-offset-2">
+									<button type="button" name="login-submit" id="login-submit" tabindex="4"
+										class="form-control btn btn-login" onclick="">Save</button>
+								</div>
+							</form>
+						</div>
+					</div>
 				</div>
+
 			</div>
 		</div>
 	</div>
@@ -248,6 +277,10 @@
 				document.getElementById("diamcalitype").options[i].selected = initialData.diamcalitypeSelection[i];
 			}
 
+			for (var i = 0; i < initialData.diamprecisionNum; i++) {
+				document.getElementById("diamprecision").options[i].selected = initialData.diamprecisionSelection[i];
+			}
+
 			for (var i = 0; i < initialData.cohortAnalysisNum; i++) {
 				document.getElementById("cohortAnalysis").options[i].selected = initialData.cohortAnalysisSelection[i];
 			}
@@ -272,6 +305,9 @@
 			document.getElementById("Threshold_SpikeIn_SI").value = initialData.Threshold_SpikeIn_SI;
 			document.getElementById("Threshold_SpikeIn_TT").value = initialData.Threshold_SpikeIn_TT;
 			document.getElementById("Threshold_SpikeIn_TTSN").value = initialData.Threshold_SpikeIn_TTSN;
+
+			document.getElementById("CohortAnalysis_MinTTSN_Events").value = initialData.CohortAnalysis_MinTTSN_Events;
+			document.getElementById("CohortAnalysis_MinTTSN_Noise").value = initialData.CohortAnalysis_MinTTSN_Noise;		
 
 			// upon click save overwrite the json array to send back to MATLAB
 			document.getElementById("login-submit").addEventListener("click", function (event) {
@@ -299,6 +335,12 @@
 					Selection[i] = document.getElementById("diamcalitype").options[i].selected;
 				}
 				initialData.diamcalitypeSelection = Selection;
+
+				Selection = [];
+				for (var i = 0; i < initialData.diamprecisionNum; i++) {
+					Selection[i] = document.getElementById("diamprecision").options[i].selected;
+				}
+				initialData.diamprecisionSelection = Selection;
 
 				Selection = [];
 				for (var i = 0; i < initialData.cohortAnalysisNum; i++) {
@@ -330,6 +372,9 @@
 				initialData.Threshold_SpikeIn_SI = document.getElementById("Threshold_SpikeIn_SI").value;
 				initialData.Threshold_SpikeIn_TT = document.getElementById("Threshold_SpikeIn_TT").value;
 				initialData.Threshold_SpikeIn_TTSN = document.getElementById("Threshold_SpikeIn_TTSN").value;
+
+				initialData.CohortAnalysis_MinTTSN_Events = document.getElementById("CohortAnalysis_MinTTSN_Events").value;
+				initialData.CohortAnalysis_MinTTSN_Noise = document.getElementById("CohortAnalysis_MinTTSN_Noise").value;
 
 				htmlComponent.Data = JSON.stringify(initialData);
 

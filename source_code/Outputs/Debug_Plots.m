@@ -181,6 +181,11 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
                             plot(xData(Best.index), Data.SetPs(Best.index,1), 'o','markeredgecolor','k')
                         end
 
+                        % stop default 3.5 pressure data overlapping with
+                        % plot label
+                        if min(Data.SetPs(:,1)) < 4
+                            ylim([0 5])
+                        end
                         formatPlot('P1 Pressure', [0 ceil(max(Data.SetPs(:,1)))], Bins.time)
 
                         %% show raw transit time / signal 2 noise vs diameter
@@ -192,7 +197,7 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
 
                         fill(10.^([0 0 2 2]),...
                             [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam)], [0 0.5 0], 'facealpha',0.2,'EdgeColor','none')
-                        text(10^(-2+(4*0.05)), (max(Bins.diam)-min(Bins.diam))*0.9,'All Events','FontWeight','bold')
+                        text(10^(-2+(4*0.95)), (max(Bins.diam)-min(Bins.diam))*0.9,'All Events','FontWeight','bold','HorizontalAlignment','right')
                         formatPlot('',[],Bins.TTSN)
                         set(gca,'xscale','log')
                         ylabel('RPS_{PASS} Diameter (nm)')
@@ -200,20 +205,13 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
 
                         %% show outlier removed transit time / signal 2 noise vs diameter
                         nexttile
-                
-                        line([0.01 100],[threshold threshold],'color','r','linewidth',1)
-                        
-                         hold on
-
                         histogram2(Data.TT2SN(~Data.outliers),Data.diam(~Data.outliers),'XBinEdges',Bins.TTSN,"YBinEdges",Bins.diam,"DisplayStyle","tile")
-                       
-   
-
+                                                hold on
                         fill(10.^[-2 -2 0 0],...
                             [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam)], [0.5 0 0], 'facealpha',0.2,'EdgeColor','none')
                         fill(10.^([0 0 2 2]),...
                             [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam)], [0 0.5 0], 'facealpha',0.2,'EdgeColor','none')
-                        text(10^(-2+(4*0.05)),(max(Bins.diam)-min(Bins.diam))*0.9,'Outlers Removed','FontWeight','bold')
+                        text(10^(-2+(4*0.95)),(max(Bins.diam)-min(Bins.diam))*0.9,'Outlers Removed','FontWeight','bold','HorizontalAlignment','right')
                         formatPlot('',[],Bins.TTSN)
                         set(gca,'xscale','log')
                         ylabel('RPS_{PASS} Diameter (nm)')
@@ -221,13 +219,21 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
 
                         %% show histogram of signal 2 noise vs diameter
                         nexttile
-                        histogram(Data.TT2SN(~Data.outliers),Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','k')
-                        hold on
-                        histogram(Data.TT2SN(Data.Indices.Events_OutlierSpikeinRemoved),Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','b')
-%                         histogram(Data.TT2SN(Data.Indices.SpikeIn_OutlierRemoved),Bins.TTSN,"DisplayStyle","stairs",'linewidth',2,'EdgeColor','r')
+                        histogram2(Data.TT2SN(~Data.outliers),Data.diam(~Data.outliers),'XBinEdges',Bins.TTSN,"YBinEdges",Bins.diam,"DisplayStyle","tile")
+                                                hold on
+                        fill(10.^[-2 -2 2 2],...
+                            [min(Bins.diam) Data.Threshold.diam Data.Threshold.diam min(Bins.diam)], [0.5 0 0], 'facealpha',0.2,'EdgeColor','none')
+                        
+                        fill(10.^[-2 -2 log10([0.5 0.5])],...
+                            [Data.Threshold.diam max(Bins.diam) max(Bins.diam) Data.Threshold.diam], [0.5 0 0], 'facealpha',0.2,'EdgeColor','none')
+                        
+                        fill(10.^([log10([0.5 0.5]) 2 2]),...
+                            [Data.Threshold.diam max(Bins.diam) max(Bins.diam) Data.Threshold.diam], [0 0.5 0], 'facealpha',0.2,'EdgeColor','none')
+                        
+                        text(10^(-2+(4*0.95)),(max(Bins.diam)-min(Bins.diam))*0.9,'Outlers Removed','FontWeight','bold','HorizontalAlignment','right')
                         formatPlot('',[],Bins.TTSN)
                         set(gca,'xscale','log')
-                        ylabel('Count')
+                        ylabel('RPS_{PASS} Diameter (nm)')
                         xlabel('Signal:Noise / Transit Time')
 
                         %% show raw time vs. transit time / signal 2 noise
@@ -245,7 +251,7 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
                                     10.^([2 -2 -2 2]), [0.5 0 0], 'facealpha',0.2,'EdgeColor','none')
                             end
                         end
-                        text((Data.RPSPASS.AcqInt(Data.RPSPASS.MaxInt))*.05, 10^(-2+(4*0.9)),'All Events','FontWeight','bold')
+                        text((Data.RPSPASS.AcqInt(Data.RPSPASS.MaxInt))*.95, 10^(-2+(4*0.9)),'All Events','FontWeight','bold','HorizontalAlignment','right')
 
                         set(gca,'yscale','log')
                         grid off
@@ -265,7 +271,7 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
                             fill([Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i+1) Data.RPSPASS.AcqInt(i+1)],...
                                 [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam) ], col, 'facealpha',0.2,'EdgeColor','none')
                         end
-                        text((Data.RPSPASS.AcqInt(Data.RPSPASS.MaxInt))*.05, (max(Bins.diam)-min(Bins.diam))*0.9,'Noise Events','FontWeight','bold')
+                        text((Data.RPSPASS.AcqInt(Data.RPSPASS.MaxInt))*.95, (max(Bins.diam)-min(Bins.diam))*0.9,'Noise Events','FontWeight','bold','HorizontalAlignment','right')
                         formatPlot('RPS_{PASS} Diameter (nm)',[],Bins.time)
 
                         nexttile
@@ -280,7 +286,7 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
                             fill([Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i) Data.RPSPASS.AcqInt(i+1) Data.RPSPASS.AcqInt(i+1)],...
                                 [min(Bins.diam) max(Bins.diam) max(Bins.diam) min(Bins.diam) ], col, 'facealpha',0.2,'EdgeColor','none')
                         end
-                        text((Data.RPSPASS.AcqInt(Data.RPSPASS.MaxInt))*.05, (max(Bins.diam)-min(Bins.diam))*0.9,'Noise Removed','FontWeight','bold')
+                        text((Data.RPSPASS.AcqInt(Data.RPSPASS.MaxInt))*.95, (max(Bins.diam)-min(Bins.diam))*0.9,'Noise Removed','FontWeight','bold','HorizontalAlignment','right')
                         formatPlot('RPS_{PASS} Diameter (nm)',[],Bins.time)
 
                         jf=java.text.DecimalFormat; % comma for thousands, three decimal places
@@ -288,6 +294,9 @@ switch getprefRPSPASS('RPSPASS','debugSelected')
 
                         % add title
                         title(t,['Outlier Removal QC, ',IterationStr,' Iterations Tested'],'fontsize',14)
+
+                        LabelSubplots(t, '', '')
+
                     end
             end
         end 

@@ -1,9 +1,9 @@
-function [] = plot_QC_data(Data)
+function [] = plot_QC_data(Data, type)
 
 % create default plot properties
 res = 256;
 Bins.time = linspace(min(Data.time),max(Data.time),res);
-Bins.diam = linspace(0,400,res);
+Bins.diam = linspace(0,400,400);
 Bins.ttime = linspace(0,100,res);
 Bins.diamcent = Bins.diam(2:end) - diff(Bins.diam)/2;
 
@@ -49,7 +49,17 @@ ylabel('Count')
 xlim([min(Bins.diam) max(Bins.diam)])
 
 %% noise removal data plotting
-ind = ~Data.Indices.NoiseInd;
+switch type
+    case 'failed'
+        if ~isfield(Data.Indices,'NoiseInd')
+            ind = [];
+        else
+            ind = ~Data.Indices.NoiseInd;
+        end
+    otherwise
+        ind = ~Data.Indices.NoiseInd;
+end
+
 nexttile(plotInd(2),[plotheight,1])
 histogram2(Data.time(ind), Data.non_norm_d(ind),'XBinEdges',Bins.time,"YBinEdges",Bins.diam,"DisplayStyle","tile")
 set(gca,'GridLineStyle','none')
@@ -70,7 +80,17 @@ ylabel('Count')
 xlim([min(Bins.diam) max(Bins.diam)])
 
 %% diam calibration data plotting
-ind = ~Data.Indices.NoiseInd;
+switch type
+    case 'failed'
+        if ~isfield(Data.Indices,'NoiseInd')
+            ind = [];
+        else
+            ind = ~Data.Indices.NoiseInd;
+        end
+    otherwise
+        ind = ~Data.Indices.NoiseInd;
+end
+
 nexttile(plotInd(3),[plotheight,1])
 histogram2(Data.time(ind), Data.diam(ind),'XBinEdges',Bins.time,"YBinEdges",Bins.diam,"DisplayStyle","tile")
 set(gca,'GridLineStyle','none')
@@ -91,7 +111,17 @@ ylabel('Count')
 xlim([min(Bins.diam) max(Bins.diam)])
 
 %% outlier & spike-in removal data plotting
-ind = Data.Indices.Events_OutlierRemoved;
+switch type
+    case 'failed'
+        if ~isfield(Data.Indices,'Events_OutlierRemoved')
+            ind = [];
+        else
+            ind = Data.Indices.Events_OutlierRemoved;
+        end
+    otherwise
+        ind = Data.Indices.Events_OutlierRemoved;
+end
+
 nexttile(plotInd(4),[plotheight,1])
 histogram2(Data.time(ind), Data.diam(ind),'XBinEdges',Bins.time,"YBinEdges",Bins.diam,"DisplayStyle","tile")
 set(gca,'GridLineStyle','none')
@@ -117,7 +147,15 @@ ylabel('Count')
 xlim([min(Bins.diam) max(Bins.diam)])
 
 %% final resulting data
-ind = Data.Indices.Events_OutlierRemovedDiamGate;
+switch type
+    case 'cohort'
+        ind = Data.Indices.Cohort_Events_OutliersSpikeinRemoved;
+    case 'individual'
+        ind = Data.Indices.Events_OutlierSpikeinRemoved;
+    case 'failed'
+        ind = [];
+end
+
 nexttile(plotInd(5),[plotheight,1])
 histogram2(Data.time(ind), Data.diam(ind),'XBinEdges',Bins.time,"YBinEdges",Bins.diam,"DisplayStyle","tile")
 set(gca,'GridLineStyle','none')
@@ -139,7 +177,14 @@ xlim([min(Bins.diam) max(Bins.diam)])
 
 %% label and export figure
 LabelSubplots(td, titleInd, GroupLabels)
-title(td, 'Individual Gating | Passed QC')
+switch type
+    case 'cohort'
+        title(td, 'Cohort Gating | Passed QC')
+    case 'individual'
+        title(td, 'Individual Gating | Passed QC')
+    case 'failed'
+        title(td, 'Failed')
+end
 
 % get output directory and filename information
 outputDir = getprefRPSPASS('RPSPASS','OutputDir');

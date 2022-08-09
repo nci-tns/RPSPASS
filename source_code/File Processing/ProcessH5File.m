@@ -7,6 +7,7 @@ else
     fnames = FileGroup{FileID};
 end
 
+% create empty arrays for data acculumation while processing files
 vol = 0;
 Data.Acqtime = 0;
 Data.AcqID = [];
@@ -19,6 +20,9 @@ Data.acqvol = [];
 Data.SetPs = [];
 Data.time = [];
 Data.cumvol = [];
+
+% keep track of successfully processed files for indexing
+ii = 0;
 
 for i = 1:size(fnames,1)
     if ~isempty(FileGroup)
@@ -42,25 +46,33 @@ for i = 1:size(fnames,1)
         data = h5read(fullfile(filepath, filenames), readstr);
     end
 
+    if ~isempty(data.pk_sym) % ignore failed acquisitions
+        ii = ii + 1; % update successful data import
 
-    Data.ttime  = [Data.ttime ; data.pk_width]; % Transit time (µs)
-    Data.symmetry = [Data.symmetry; data.pk_sym]; % Pulse symmetry
-    Data.signal2noise  = [Data.signal2noise ; data.pk_sn]; % Signal to noise ratio
-    Data.non_norm_d  = [Data.non_norm_d ; nCS1_Scaling_Factor(data, sfactInd)]; % Uncalibrated Diameter (nm)
+        Data.ttime  = [Data.ttime ; data.pk_width]; % Transit time (µs)
+        Data.symmetry = [Data.symmetry; data.pk_sym]; % Pulse symmetry
+        Data.signal2noise  = [Data.signal2noise ; data.pk_sn]; % Signal to noise ratio
 
-    % time calculation
-    Data.time = [Data.time; (double(data.pk_index) * (timeind/samprate)) + Data.Acqtime(i)]; % Time (secs)
-    Data.Acqtime = [Data.Acqtime; Data.Acqtime(i) + timeind];
+        switch getprefRPSPASS('RPSPASS','diamprecisionSelected')
+            case 'RPSPASS'
+                Data.non_norm_d  = [Data.non_norm_d ; nCS1_Scaling_Factor_RPSPASS(data, sfactInd)]; % Uncalibrated Diameter (nm)
+            case 'Spectradyne'
+                Data.non_norm_d  = [Data.non_norm_d ; nCS1_Scaling_Factor_Spectradyne(data, sfactInd)]; % Uncalibrated Diameter (nm)
+        end
+        % time calculation
+        Data.time = [Data.time; (double(data.pk_index) * (timeind/samprate)) + Data.Acqtime(ii)]; % Time (secs)
+        Data.Acqtime = [Data.Acqtime; Data.Acqtime(ii) + timeind];
 
-    % volume calculation
-    Data.cumvol = [Data.cumvol; (((double(data.pk_index) * (acqvol/samprate)) + vol).* 1e9)]; % Cumulative Volume (pL)
-    vol = vol + acqvol;
+        % volume calculation
+        Data.cumvol = [Data.cumvol; (((double(data.pk_index) * (acqvol/samprate)) + vol).* 1e9)]; % Cumulative Volume (pL)
+        vol = vol + acqvol;
 
-    % aggregate data across each acquisition
-    Data.AcqID = [Data.AcqID; i*ones(size(data.pk_width,1),1)]; % run ID for each event
-    Data.acq_int = [Data.acq_int; timeind]; % acquisition time
-    Data.acqvol = [Data.acqvol; (acqvol.* 1e9)]; % total volume of each acquisition (pL)
-    Data.SetPs = [Data.SetPs; setPs(:)']; % get input pressures for each acquisition P1 IN, P5 OUT, P3 IN, P2 OUT, P7 IN, and P6 OUT
+        % aggregate data across each acquisition
+        Data.AcqID = [Data.AcqID; i*ones(size(data.pk_width,1),1)]; % run ID for each event
+        Data.acq_int = [Data.acq_int; timeind]; % acquisition time
+        Data.acqvol = [Data.acqvol; (acqvol.* 1e9)]; % total volume of each acquisition (pL)
+        Data.SetPs = [Data.SetPs; setPs(:)']; % get input pressures for each acquisition P1 IN, P5 OUT, P3 IN, P2 OUT, P7 IN, and P6 OUT
+    end
 end
 
 % raw sample data
@@ -81,7 +93,7 @@ Data.UngatedTotalEvents = size(Data.AcqID,1); % total number of detected events 
 Data.EventID = 1:numel(Data.AcqID); % create a unique ID for each event for downstream indexing
 Data.Indices.NoiseInd = Data.signal2noise./Data.ttime<1; % noise index
 Data.Indices.NotNoise = not(Data.Indices.NoiseInd); % event index
-Data.Indices.Unprocessed = true(size(Data.diam,1)); % event index
+Data.Indices.Unprocessed = true(size(Data.diam)); % event index
 
 % sample metadata
 cartstr = Data.Info{strcmp(Data.Info(:,1),'cartridge_class'),2};

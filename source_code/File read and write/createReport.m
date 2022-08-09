@@ -1,4 +1,4 @@
-function [Report] = createReport(FileID, Report, Data)
+function [Report, Set] = createReport(FileID, Report, Data)
 
 CoFact_pl2mL = 1e9;
 PassedSetIDs = Data.AcqIDUq(~Data.RPSPASS.FailedAcq);
@@ -7,7 +7,6 @@ Set.vol = Data.acqvol(~Data.RPSPASS.FailedAcq).*(1/CoFact_pl2mL);
 fields = {'Unprocessed'};
 indexNames = {'Unprocessed'};
 
-return
 switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
     case 'on'
         switch Data.RPSPASS.SpikeInUsed
@@ -24,15 +23,20 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
                 fields = [fields, {'NotOutliers','NoNoise','Events_OutlierRemoved','Events_OutlierSpikeinRemoved','SpikeIn_OutlierRemoved'}];
                 indexNames = [indexNames, {'NotOutliers','NotNoise','Events_OutlierRemoved','Events_OutlierSpikeinRemoved','SpikeIn_OutlierRemoved'}];
             case 'No'
-
                 fields = [fields, {'NoNoise'}];
                 indexNames = [indexNames, {'NotNoise'}];
         end
 end
 
+if isfield(Data.Indices,'Cohort_Events_OutliersSpikeinRemoved')
+    fields = [fields, {'Cohort_Events_OutliersSpikeinRemoved'}];
+    indexNames = [indexNames, {'Cohort_Events_OutliersSpikeinRemoved'}];
+end
 
-for i = 1:numel(PassedSetIDs)
-    Set.Raw.Events(i) = sum(Data.AcqID(Data.Indices.(indexNames{i})) == PassedSetIDs(i));
+for i = 1:numel(fields)
+    for ii = 1:numel(PassedSetIDs)
+        Set.(fields{i}).Events(ii) = sum(Data.AcqID(Data.Indices.(indexNames{i})) == PassedSetIDs(ii));
+    end
 end
 
 for i = 1:numel(fields)
@@ -45,73 +49,63 @@ vol = sum(Set.vol); % gated population volume in mL
 
 ungate_vol = Data.cumvol(end); % ungated volume in pL
 
-Report{FileID,'Unprocessed Total Events'}{1} = Data.UngatedTotalEvents;
+Report{FileID,'Unprocessed Total Events'}{1} = sum(Set.Unprocessed.Events);
 Report{FileID,'Unprocessed Total Volume (pL)'}{1} = round(ungate_vol,1); % total volume in nL
-Report{FileID,'Unprocessed Total Conc (mL^-1)'}{1} = round(Data.UngatedTotalEvents/(ungate_vol*(1/CoFact_pl2mL)),0);
-
-ind_gate = and(~Data.outliers,~Data.Indices.NoiseInd); % sample gated population
+Report{FileID,'Unprocessed Total Conc Mean (mL^-1)'}{1} = round(Set.Unprocessed.Conc.Mean,0);
+Report{FileID,'Unprocessed Total Conc SD (mL^-1)'}{1} = round(Set.Unprocessed.Conc.SD,0);
 
 switch Data.RPSPASS.SpikeInUsed
     case 'Yes'
-        SpikeIn_IndGate = Data.diam(ind_gate) > Data.SpikeInGateMinNorm & Data.diam(ind_gate) < Data.SpikeInGateMaxNorm;
-
-        Report{FileID,'IndGate Spike-in Events'}{1} = sum(SpikeIn_IndGate);
-        Report{FileID,'IndGate Non-spike-in Events'}{1} = sum(Data.diam(ind_gate) < Data.SpikeInGateMinNorm);
-%         Report{FileID,'IndGate Diameter Gate (nm)'}{1} = num2str(round([Data.boundary.diam(1) Data.SpikeInGateMinNorm Data.SpikeInGateMinNorm Data.boundary.diam(4)]));
 
         % concetratraion reporting
-        if isempty(Data.RPSPASS.SpikeInConc) % if spike concentration not used
-            Report{FileID,'IndGate Sample Conc (mL^-1)'}{1} = round(sum(~SpikeIn_IndGate)/vol,0);
-            Report{FileID,'IndGate Spike-In Conc (mL^1)'}{1} = round(sum(SpikeIn_IndGate)/vol,0);
-        else % if spike concentration is used
-            ConcCalFactor_IndGate = (sum(SpikeIn_IndGate)/vol)/Data.RPSPASS.SpikeInConc;
-            Report{FileID,'IndGate Sample Conc (mL^-1)'}{1} = round(sum((~SpikeIn_IndGate)/vol)/ ConcCalFactor_IndGate ,0);
-            Report{FileID,'IndGate Spike-In Conc (mL^1)'}{1} = round(sum((SpikeIn_IndGate)/vol)/ ConcCalFactor_IndGate,0);
+        if isempty(Data.RPSPASS.SpikeInConc)
+            Set.ConcCalFactor_IndGate = 1; % if spike concentration not used
+        else
+            Set.ConcCalFactor_IndGate = Set.SpikeIn_OutlierRemoved.Conc.Mean/Data.RPSPASS.SpikeInConc;
         end
+
+        % sample concentration reporting
+        Report{FileID,'IndGate Non-spike-in Events'}{1} = sum(Set.Events_OutlierSpikeinRemoved.Events);
+        Report{FileID,'CoGate Non-spike-in Events'}{1} = sum(Set.Events_OutlierSpikeinRemoved.Events);
+
+        Report{FileID,'IndGate Sample Conc Mean (mL^-1)'}{1} = round(Set.Events_OutlierSpikeinRemoved.Conc.Mean/ Set.ConcCalFactor_IndGate,0);
+        Report{FileID,'IndGate Sample Conc SD (mL^-1)'}{1} = round(Set.Events_OutlierSpikeinRemoved.Conc.SD / Set.ConcCalFactor_IndGate,0);
+
+        if isfield(Data.Indices,'Cohort_Events_OutliersSpikeinRemoved')
+            Report{FileID,'CoGate Sample Conc Mean (mL^-1)'}{1} = round(Set.Cohort_Events_OutliersSpikeinRemoved.Conc.Mean / Set.ConcCalFactor_IndGate,0);
+            Report{FileID,'CoGate Sample Conc SD (mL^-1)'}{1} = round(Set.Cohort_Events_OutliersSpikeinRemoved.Conc.SD / Set.ConcCalFactor_IndGate,0);
+        end
+
+        % spike-in concentration reporting
+        Report{FileID,'IndGate Spike-in Events'}{1} = sum(Set.SpikeIn_OutlierRemoved.Events);
+        Report{FileID,'CoGate Spike-in Events'}{1} = sum(Set.SpikeIn_OutlierRemoved.Events);
+
+        Report{FileID,'IndGate Spike-In Conc Mean (mL^-1)'}{1} = round(Set.SpikeIn_OutlierRemoved.Conc.Mean / Set.ConcCalFactor_IndGate,0);
+        Report{FileID,'IndGate Spike-In Conc SD (mL^-1)'}{1} = round(Set.SpikeIn_OutlierRemoved.Conc.SD / Set.ConcCalFactor_IndGate,0);
+
+        Report{FileID,'CoGate Spike-In Conc Mean (mL^-1)'}{1} = round(Set.SpikeIn_OutlierRemoved.Conc.Mean / Set.ConcCalFactor_IndGate,0);
+        Report{FileID,'CoGate Spike-In Conc SD (mL^-1)'}{1} = round(Set.SpikeIn_OutlierRemoved.Conc.SD / Set.ConcCalFactor_IndGate,0);
 
     case 'No'
-        Report{FileID,'IndGate Non-spike-in Events'}{1} = sum(ind_gate);
-        Report{FileID,'IndGate Sample Conc (mL^-1)'}{1} = round(sum(ind_gate)/vol,0);
-        Report{FileID,'IndGate Spike-In Conc (mL^1)'}{1} = 'N/A';
+        Report{FileID,'IndGate Non-spike-in Events'}{1} = sum(Set.Events_OutlierRemoved.Events);
+
+        Report{FileID,'IndGate Sample Conc Mean (mL^-1)'}{1} = round(Set.Events_OutlierRemoved.Conc.Mean,0);
+        Report{FileID,'IndGate Sample Conc SD (mL^-1)'}{1} = round(Set.Events_OutlierRemoved.Conc.SD,0);
+
+        Report{FileID,'IndGate Spike-In Conc Mean (mL^-1)'}{1} = 'N/A';
+        Report{FileID,'IndGate Spike-In Conc SD (mL^-1)'}{1} = 'N/A';
+
         Report{FileID,'IndGate Diameter Gate (nm)'}{1} = num2str(round(Data.boundary.diam));
-end
 
-Report{FileID,'IndGate Total Volume (pL)'}{1} = round(vol*CoFact_pl2mL,1); % total volume in nL
-% Report{FileID,'IndGate Transit Time Gate (µs)'}{1} = num2str(round(Data.boundary.ttime));
-
-
-%% if cohort gating is turned on
-switch getprefRPSPASS('RPSPASS','cohortAnalysisSelected')
-    case 'on'
-        coh_gate = and(~Data.outliers,~Data.Indices.NoiseInd); % cohort gated population
-
-        switch Data.RPSPASS.SpikeInUsed
-            case 'Yes'
-                SpikeIn_CoGate = Data.diam(coh_gate) > Data.SpikeInGateMinNorm & Data.diam(coh_gate) < Data.SpikeInGateMaxNorm;
-
-                Report{FileID,'CoGate Spike-in Events'}{1} = sum(SpikeIn_CoGate);
-                Report{FileID,'CoGate Non-spike-in Events'}{1} = sum(Data.diam(coh_gate) < Data.RPSPASS.CohortGate.minSpike);
-                Report{FileID,'CoGate Diameter Gate (nm)'}{1} = num2str(round([Data.RPSPASS.CohortGate.diam(1) Data.RPSPASS.CohortGate.minSpike Data.RPSPASS.CohortGate.minSpike Data.RPSPASS.CohortGate.diam(4)]));
-
-                % concetratraion reporting
-                if isempty(Data.RPSPASS.SpikeInConc) % if spike concentration not used
-                    Report{FileID,'CoGate Sample Conc (mL^-1)'}{1} = round(sum(~SpikeIn_CoGate)/vol,0);
-                    Report{FileID,'CoGate Spike-In Conc (mL^1)'}{1} = round(sum(SpikeIn_CoGate)/vol,0);
-                else % if spike concentration is used
-                    ConcCalFactor_CoGate =  (sum(SpikeIn_CoGate)/vol)/Data.RPSPASS.SpikeInConc;
-                    Report{FileID,'CoGate Sample Conc (mL^-1)'}{1} = round(sum((~SpikeIn_CoGate)/vol)/ ConcCalFactor_CoGate,0);
-                    Report{FileID,'CoGate Spike-In Conc (mL^1)'}{1} = round(sum((SpikeIn_CoGate)/vol)/ ConcCalFactor_CoGate,0);
-                end
-
-            case 'No'
-                Report{FileID,'CoGate Non-spike-in Events'}{1} = sum(coh_gate);
-                Report{FileID,'CoGate Sample Conc (mL^-1)'}{1} = round(sum(coh_gate)/vol,0);
-                Report{FileID,'CoGate Spike-In Conc (mL^1)'}{1} = 'N/A';
-                Report{FileID,'CoGate Diameter Gate (nm)'}{1} = num2str(round(Data.RPSPASS.CohortGate.diam));
+        if isfield(Data.Indices,'Cohort_Events_OutliersSpikeinRemoved')
+            Report{FileID,'CoGate Sample Conc Mean (mL^-1)'}{1} = round(Set.Cohort_Events_OutliersSpikeinRemoved.Conc.Mean,0);
+            Report{FileID,'CoGate Spike-In Conc SD (mL^-1)'}{1} = round(Set.Cohort_Events_OutliersSpikeinRemoved.Conc.SD,0);
         end
 
-        Report{FileID,'CoGate Total Volume (pL)'}{1} = round(vol*CoFact_pl2mL,1); % total volume in nL
-        Report{FileID,'CoGate Transit Time Gate (µs)'}{1} = num2str(round(Data.boundary.ttime));
 end
+
+% total volume in nL
+Report{FileID,'IndGate Total Volume (pL)'}{1} = round(vol*CoFact_pl2mL,1); 
+Report{FileID,'CoGate Total Volume (pL)'}{1} = round(vol*CoFact_pl2mL,1);
 
 end
