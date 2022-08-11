@@ -65,8 +65,7 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
 
         % check if TT outlier removal is turned on
         if getprefRPSPASS('RPSPASS','OutlierRemoval_TransitTime') == 1
-            iteration.TT = floor(min(SpikeInTT)) : 0.2 : ceil(max(SpikeInTT));
-
+            iteration.TT = testRange(SpikeInTT, getprefRPSPASS('RPSPASS','Threshold_SpikeIn_TT'));
             for i = 1:numel(iteration.TT ) % cycle through each transit time gate
                 index.TT(:,i) = SpikeInTT >= iteration.TT(i) & SpikeInTT <= iteration.TT(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_TT');
             end
@@ -74,7 +73,7 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
 
         % check if CV outlier removal is turned on
         if getprefRPSPASS('RPSPASS','OutlierRemoval_CV') == 1
-            iteration.CV = min(CVs):0.1:ceil(max(CVs));
+             iteration.CV = testRange(CVs, getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV'));
             for i = 1:numel(iteration.CV)  % cycle through each CV gate
                 index.CV(:,i) = CVs >= iteration.CV(i) & CVs <= iteration.CV(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_CV');
             end
@@ -82,7 +81,7 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
 
         % check if SI outlier removal is turned on
         if getprefRPSPASS('RPSPASS','OutlierRemoval_SI') == 1
-            iteration.SI = min(SI) : 0.1 : ceil(max(SI));
+             iteration.SI = testRange(SI, getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI'));
             for i = 1:numel(iteration.SI)  % cycle through each SI gate
                 index.SI(:,i) = SI >= iteration.SI(i) & SI <= iteration.SI(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_SI');
             end
@@ -90,7 +89,7 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
 
         % check if TTSN outlier removal is turned on
         if getprefRPSPASS('RPSPASS','OutlierRemoval_TTSN') == 1
-            iteration.TTSN = min(SpikeInTT2SN) : 0.1 : ceil(max(SpikeInTT2SN));
+             iteration.TTSN = testRange(SpikeInTT2SN, getprefRPSPASS('RPSPASS','Threshold_SpikeIn_TTSN'));
             for i = 1:numel(iteration.TTSN) % cycle through each TTSN gate
                 index.TTSN(:,i) = SpikeInTT2SN >= iteration.TTSN(i) & SpikeInTT2SN <= iteration.TTSN(i)+getprefRPSPASS('RPSPASS','Threshold_SpikeIn_TTSN');
             end
