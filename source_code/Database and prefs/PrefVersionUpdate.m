@@ -34,8 +34,8 @@ Prefs = {...
 
     'matfile',1; ...                % write a .mat file [0=off, 1=on]
     'fcsfile',1; ...                % write a .fcs file [0=off, 1=on]
-    'xlsxfile',1; ...                % write a .csv file [0=off, 1=on]
-    'jsonfile',1; ...                % write a .csv file [0=off, 1=on]
+    'xlsxfile',1; ...                % write a .xslx file [0=off, 1=on]
+    'jsonfile',1; ...                % write a .json file [0=off, 1=on]
 
     'filelocatorOptions',{'_cc','_ss00'};...    % method used to identify experiment files
     'filelocatorSelection', [false; true];...   % logic gate for file operator selection in pref panel
