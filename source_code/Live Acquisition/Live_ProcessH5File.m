@@ -47,8 +47,13 @@ for i = 1:size(fnames,1)
     Data.ttime  = [Data.ttime ; data.pk_width]; % Transit time (µs)
     Data.symmetry = [Data.symmetry; data.pk_sym]; % Pulse symmetry
     Data.signal2noise  = [Data.signal2noise ; data.pk_sn]; % Signal to noise ratio
-    Data.non_norm_d  = [Data.non_norm_d ; nCS1_Scaling_Factor(data, sfactInd)]; % Uncalibrated Diameter (nm)
 
+    switch getprefRPSPASS('RPSPASS','diamprecisionSelected')
+        case 'RPSPASS'
+            Data.non_norm_d  = [Data.non_norm_d ; nCS1_Scaling_Factor_RPSPASS(data, sfactInd)]; % Uncalibrated Diameter (nm)
+        case 'Spectradyne'
+            Data.non_norm_d  = [Data.non_norm_d ; nCS1_Scaling_Factor_Spectradyne(data, sfactInd)]; % Uncalibrated Diameter (nm)
+    end
     % time calculation
     Data.time = [Data.time; (double(data.pk_index) * (timeind/samprate)) + Data.Acqtime(i)]; % Time (secs)
     Data.Acqtime = [Data.Acqtime; Data.Acqtime(i) + timeind];

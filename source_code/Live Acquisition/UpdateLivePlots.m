@@ -77,6 +77,7 @@ xData = Data.Acqtime(2:end) - diff(Data.Acqtime)/2;
 Label = [];
 hold(app.TimeStatPlot,'on')
 plots = [];
+Sets = unique(Data.AcqID);
 switch app.TotalEventsMenu.Checked
     case 'on'
 
