@@ -105,7 +105,7 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
         for i = 1:numel(IndexFields)
             remove = sum(index.(IndexFields{1}),1) < test.thresholdSets;
             iteration.(IndexFields{i})(remove) = [];
-            index.(IndexFields{i})(remove,:) = [];
+            index.(IndexFields{i})(:,remove) = [];
             index.array{i} = 1:size(index.(IndexFields{i}),2); % create an array for each unique index field
         end
 
