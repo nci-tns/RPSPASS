@@ -1,6 +1,6 @@
 # RPS<sub>PASS</sub>
 
-This software is designed to allow the analysis of extracellular vesicle microfluidic resistive pulse sensing data. Full documentation and protocols can be found at (https://nano.ccr.cancer.gov/rpspass/)
+This software is designed to allow the analysis of extracellular vesicle microfluidic resistive pulse sensing data. Full documentation and protocols can be found at: https://nano.ccr.cancer.gov/rpspass/.
 
 ## Getting Started
 Protocols for using the software can be found at https://nano.ccr.cancer.gov/protocols
