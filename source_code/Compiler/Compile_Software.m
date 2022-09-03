@@ -13,6 +13,7 @@ if ismac()
     installDir = '/Applications/RPSPASS';
     outputDir = ['/Users/welshjoa/Library/CloudStorage/OneDrive-SharedLibraries-NationalInstitutesofHealth/CCR-Translational-Nanobiology - Software/RPSPASS/Compiled/Mac/',ver];
     intallerName = 'RPSPASS_Installer_Mac';
+    SourcePath = [filesep,SourcePath];
 elseif ispc()
     installDir = 'C:\Program Files\RPSPASS';
     outputDir = ['C:\Users\welshjoa\Documents\MATLAB\RPSPASS\Compiled\',ver];

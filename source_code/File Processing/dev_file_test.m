@@ -50,7 +50,7 @@ else
 
     switch selection
         case 'Download'
-            filename = 'RPSPASS Dev Testing Files.zip';
+            filename = 'RPSPASS_Dev_Files.zip';
 
             % get path to save testing directory
             [~,path] = uiputfile(filename);
