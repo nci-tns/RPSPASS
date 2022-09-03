@@ -18,18 +18,18 @@ if isfolder(test_path)
         if ismac()
             filep = strsplit(Sets{i},'/');
         elseif ispc()
-             filep = strsplit(Sets{i},'\');
+            filep = strsplit(Sets{i},'\');
         end
 
         % get folder name that dictates spike-in concentration
         concStr = str2num(filep{end-1});
-        
+
         if ~isempty(concStr) || concStr ~= 0
             app.SpikeInConc = concStr;
         else
             app.SpikeInConc = [];
         end
-       
+
         SpikeInStr = str2num(filep{end-2});
 
         if SpikeInStr == 0
@@ -45,8 +45,8 @@ if isfolder(test_path)
 
 else
     selection = uiconfirm(app.RPSPASS,'Testing directory cannot be found','Test directory',...
-                        'Icon','warning','Options',{'Download','Locate','Cancel'}, ...
-           'DefaultOption',2,'CancelOption',3);
+        'Icon','warning','Options',{'Download','Locate','Cancel'}, ...
+        'DefaultOption',2,'CancelOption',3);
 
     switch selection
         case 'Download'
@@ -54,14 +54,19 @@ else
 
             % get path to save testing directory
             [~,path] = uiputfile(filename);
-            
+
             % run system command to download installer
-            input =['curl ',getprefRPSPASS('RPSPASS','dev_file_download'),' --output ','''',fullfile(path,filename),''''];
+            if ismac()
+                input =['curl ',getprefRPSPASS('RPSPASS','dev_file_download'),' --output ','''',fullfile(path,filename),''''];
+            elseif ispc()
+                input =['curl ',getprefRPSPASS('RPSPASS','dev_file_download'),' --output ',fullfile(path,filename),''];
+            end
+
             system(input);
 
             % unzip the installer
             unzip(fullfile(path,filename),path)
-            
+
             % delete the remaining zip folder
             delete(fullfile(path,filename))
 
@@ -82,7 +87,7 @@ else
             % rerun script for path to be verified
             dev_file_test(app)
         case 'Cancel'
-        status = 'Cancel';
+            status = 'Cancel';
     end
 
 
