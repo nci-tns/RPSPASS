@@ -8,22 +8,26 @@ MasterFile = 'GUI_Master.mlapp';
 if ismac()
     installDir = '/Applications/RPSPASS';
     outputDir = ['/Users/welshjoa/Library/CloudStorage/OneDrive-SharedLibraries-NationalInstitutesofHealth/CCR-Translational-Nanobiology - Software/RPSPASS/Compiled/Mac/',ver];
+    intallerName = 'RPSPASS_Installer_Mac';
 elseif ispc()
     installDir = 'C:\Program Files\RPSPASS';
-    outputDir = ['/Users/welshjoa/Library/CloudStorage/OneDrive-SharedLibraries-NationalInstitutesofHealth/CCR-Translational-Nanobiology - Software/RPSPASS/Compiled/Mac/',ver];
+    outputDir = ['/Users/welshjoa/Library/CloudStorage/OneDrive-SharedLibraries-NationalInstitutesofHealth/CCR-Translational-Nanobiology - Software/RPSPASS/Compiled/Windows/',ver];
+    intallerName = 'RPSPASS_Installer_PC';
 end
 
 if ~isfolder(outputDir)
     mkdir(outputDir)
 end
 
+path = strsplit((which(MasterFile)),filesep);
+EmptyPath = cellfun(@isempty, path);
 
 % application compiler options
-App.opts = compiler.build.StandaloneApplicationOptions(MasterFile);
+App.opts = compiler.build.StandaloneApplicationOptions(which(MasterFile));
 App.opts.EmbedArchive= 'on';
-App.opts.ExecutableIcon= fullfile('Icons','RPS Logo.jpg');
+App.opts.ExecutableIcon= which('RPS Logo.jpg');
 App.opts.ExecutableName= 'RPSPASS';
-App.opts.ExecutableSplashScreen= fullfile('Icons','RPS Logo.jpg');
+App.opts.ExecutableSplashScreen= which('RPS Logo.jpg');
 App.opts.ExecutableVersion= ver;
 App.opts.TreatInputsAsNumeric= 'off';
 App.opts.AutoDetectDataFiles= 'on';
@@ -48,11 +52,13 @@ Inst.opts = compiler.package.InstallerOptions(...
     'InstallationNotes', '',...
     'Shortcut', '',...
     'Version', ver,...
-    'InstallerName', 'RPSPASS_Installer',...
+    'InstallerName', intallerName,...
     'ApplicationName', 'RPSPASS',...
     'OutputDir', fullfile(outputDir,'Installer'),...
     'DefaultInstallationDir', installDir);
 
+Files = [App.results.Files, 'LICENSE'];
+
 % create installation compiler
-compiler.package.installer(App.results,'Options',Inst.opts);
+compiler.package.installer(Files,'Options',Inst.opts);
 
