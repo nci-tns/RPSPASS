@@ -14,6 +14,7 @@ if ~isequal(filepath,0)
     if numel(Filenames) > 0
         % get user selected live file
         app.SampleName.Items = Filenames;
+
         % fine file group index for selected file
         FileID = strcmp(Filenames, app.SampleName.Value);
 

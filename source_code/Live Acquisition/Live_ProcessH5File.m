@@ -21,6 +21,10 @@ Data.SetPs = [];
 Data.time = [];
 Data.cumvol = [];
 
+Data.FL1 = [];
+Data.FL2 = [];
+Data.FL3 = [];
+
 for i = 1:size(fnames,1)
     if ~isempty(FileGroup)
         CompFilename = fullfile(filepath, FileGroup{FileID}{i});
@@ -43,6 +47,11 @@ for i = 1:size(fnames,1)
         data = h5read(fullfile(filepath, filenames), readstr);
     end
 
+    if isfield(data,'fl1_size')
+        Data.FL1 = [Data.FL1; data.fl1_size];
+        Data.FL2 = [Data.FL2; data.fl2_size];
+        Data.FL3 = [Data.FL3; data.fl3_size];
+    end
 
     Data.ttime  = [Data.ttime ; data.pk_width]; % Transit time (µs)
     Data.symmetry = [Data.symmetry; data.pk_sym]; % Pulse symmetry
@@ -126,6 +135,38 @@ switch Data.RPSPASS.SpikeInUsed
             Data.SI(i) = (prctile(SpikeIn,50) - prctile(Noise,50)) / (prctile(Noise,95));
             Data.CV(i) = 100*(std(SpikeIn)/mean(SpikeIn));
         end
+end
+
+
+if ~isempty(Data.FL1)
+    AxisSelection = {'Diameter','S2N/TT','Transit Time','Time','FL1','FL2','FL3'};
+else
+    AxisSelection = {'Diameter','S2N/TT','Transit Time'};
+end
+
+
+
+if isempty(app.Plot1_Xaxis.Value)
+    app.Plot1_Xaxis.Items = AxisSelection;
+    app.Plot1_Yaxis.Items = AxisSelection;
+    app.Plot2_Xaxis.Items = AxisSelection;
+    app.Plot2_Yaxis.Items = AxisSelection;
+    app.Plot3_Xaxis.Items = AxisSelection;
+    app.Plot3_Yaxis.Items = AxisSelection;
+
+    app.Plot1_Xaxis.Value = 'Time';
+    app.Plot1_Yaxis.Value = 'Diameter';
+    app.Plot2_Xaxis.Value = 'Transit Time';
+    app.Plot2_Yaxis.Value = 'Diameter';
+    app.Plot3_Xaxis.Value = 'S2N/TT';
+    app.Plot3_Yaxis.Value = 'Diameter';
+else
+    app.Plot1_Xaxis.Items = AxisSelection;
+    app.Plot1_Yaxis.Items = AxisSelection;
+    app.Plot2_Xaxis.Items = AxisSelection;
+    app.Plot2_Yaxis.Items = AxisSelection;
+    app.Plot3_Xaxis.Items = AxisSelection;
+    app.Plot3_Yaxis.Items = AxisSelection;
 end
 
 end

@@ -1,19 +1,7 @@
 function UpdateLivePlots(app, Data)
 
-% update the maximum time
-if app.TimeMax < max(Data.time)
-    app.TimeMax = max(Data.time);
-elseif app.TimeMax > max(Data.time)
-    if max(Data.time) > 100
-        app.TimeMax = max(Data.time);
-    else
-        app.TimeMax = 100;
-    end
-
-end
-
 % update axis plotting preferences
-UpdatePlottingPrefs(app)
+% UpdatePlottingPrefs(app)
 
 % create gate for noise
 switch app.RemovenoiseMenu.Checked
@@ -23,38 +11,77 @@ switch app.RemovenoiseMenu.Checked
         noiseGate = Data.TT2SN > 1;
 end
 
-% if spike-in is being used, swtich to calibrated data
-switch Data.RPSPASS.SpikeInUsed
-    case 'On'
-        DiamData = Data.diam(noiseGate);
-    case 'Off'
-        DiamData = Data.non_norm_d(noiseGate);
-end
 
-% plot time vs. diameter plot
-histogram2(app.DiamTimePlot, Data.time(noiseGate), DiamData,...
-    'XBinEdges',app.TimeEdges, 'YBinEdges',app.DiamEdges,...
+% plot 1 (by default time vs. diameter plot)
+[xData, xBin, xScale, xLabel, xLims] = getAxisParameter(app, app.Plot1_Xaxis.Value, Data);
+[yData, yBin, yScale, yLabel, yLims] = getAxisParameter(app, app.Plot1_Yaxis.Value, Data);
+
+histogram2(app.DiamTimePlot, xData(noiseGate), yData(noiseGate),...
+    'XBinEdges',xBin, 'YBinEdges',yBin,...
     'DisplayStyle','tile')
 colormap(app.DiamTimePlot,app.Colormap) % update colormap
-set(app.DiamTimePlot,'ColorScale',app.Colorscaling) % update colorscaling
-
+set(app.DiamTimePlot,'ColorScale',app.Colorscaling,...
+    'xscale',xScale,'yscale',yScale) % update colorscaling
+xlabel(app.DiamTimePlot, xLabel)
+ylabel(app.DiamTimePlot, yLabel)
+xlim(app.DiamTimePlot, xLims)
+ylim(app.DiamTimePlot, yLims)
+ylim(app.DiamTimePlot,'auto');
+xticks(app.DiamTimePlot,'auto')
+yticks(app.DiamTimePlot,'auto')
+app.DiamTimePlot.Toolbar.Visible = 'off';
+app.DiamTimePlot.XGrid = app.XMajorMenu.Checked;
+app.DiamTimePlot.XMinorGrid = app.XMinorMenu.Checked;
+app.DiamTimePlot.YGrid = app.YMajorMenu.Checked;
+app.DiamTimePlot.YMinorGrid = app.YMinorMenu.Checked;
 
 % plot S2N/transit time vs. diameter plot
-histogram2(app.DiamTTimePlot, Data.ttime(noiseGate), DiamData,...
-    'XBinEdges',app.TTimeEdges, 'YBinEdges',app.DiamEdges,...
+[xData, xBin, xScale, xLabel, xLims] = getAxisParameter(app, app.Plot2_Xaxis.Value, Data);
+[yData, yBin, yScale, yLabel, yLims] = getAxisParameter(app, app.Plot2_Yaxis.Value, Data);
+
+histogram2(app.DiamTTimePlot, xData(noiseGate), yData(noiseGate),...
+    'XBinEdges',xBin, 'YBinEdges',yBin,...
     'DisplayStyle','tile')
 colormap(app.DiamTTimePlot,app.Colormap) % update colormap
-set(app.DiamTTimePlot,'ColorScale',app.Colorscaling) % update colorscaling
+set(app.DiamTTimePlot,'ColorScale',app.Colorscaling,...
+    'xscale',xScale,'yscale',yScale) % update colorscaling
+xlabel(app.DiamTTimePlot, xLabel)
+ylabel(app.DiamTTimePlot, yLabel)
+xlim(app.DiamTTimePlot, xLims)
+ylim(app.DiamTTimePlot, yLims)
+xticks(app.DiamTTimePlot,'auto')
+yticks(app.DiamTTimePlot,'auto')
+app.DiamTTimePlot.Toolbar.Visible = 'off';
+app.DiamTTimePlot.XGrid = app.XMajorMenu.Checked;
+app.DiamTTimePlot.XMinorGrid = app.XMinorMenu.Checked;
+app.DiamTTimePlot.YGrid = app.YMajorMenu.Checked;
+app.DiamTTimePlot.YMinorGrid = app.YMinorMenu.Checked;
 
 % plot transit time vs. diameter plot
-histogram2(app.S2NTT_Diam, Data.TT2SN(noiseGate), DiamData,...
-    'XBinEdges',app.S2NTTEdges, 'YBinEdges',app.DiamEdges,...
+[xData, xBin, xScale, xLabel, xLims] = getAxisParameter(app, app.Plot3_Xaxis.Value, Data);
+[yData, yBin, yScale, yLabel, yLims] = getAxisParameter(app, app.Plot3_Yaxis.Value, Data);
+
+histogram2(app.S2NTT_Diam, xData(noiseGate), yData(noiseGate),...
+    'XBinEdges',xBin, 'YBinEdges',yBin,...
     'DisplayStyle','tile')
 colormap(app.S2NTT_Diam,app.Colormap) % update colormap
-set(app.S2NTT_Diam,'ColorScale',app.Colorscaling,'xscale','log') % update colorscaling
+set(app.S2NTT_Diam,'ColorScale',app.Colorscaling,...
+    'xscale',xScale,'yscale',yScale) % update colorscaling
+xlabel(app.S2NTT_Diam, xLabel)
+ylabel(app.S2NTT_Diam, yLabel)
+xlim(app.S2NTT_Diam, xLims)
+ylim(app.S2NTT_Diam, yLims)
+xticks(app.S2NTT_Diam,'auto')
+yticks(app.S2NTT_Diam,'auto')
+app.S2NTT_Diam.Toolbar.Visible = 'off';
+app.S2NTT_Diam.XGrid = app.XMajorMenu.Checked;
+app.S2NTT_Diam.XMinorGrid = app.XMinorMenu.Checked;
+app.S2NTT_Diam.YGrid = app.YMajorMenu.Checked;
+app.S2NTT_Diam.YMinorGrid = app.YMinorMenu.Checked;
 
 % plot diameter histogram
-histogram(app.DiamHist, DiamData,app.DiamEdges, 'linewidth',2,...
+[xData] = getAxisParameter(app, 'Diameter', Data);
+histogram(app.DiamHist, xData(noiseGate), app.DiamEdges, 'linewidth',2,...
     'DisplayStyle','stairs','edgecolor','k')
 set(app.DiamHist,'xscale','linear') % update colorscaling
 
@@ -123,4 +150,58 @@ if ~isempty(plots)
     hold(app.TimeStatPlot,'off')
 end
 
+% time vs. stat
+app.TimeStatPlot.XLim = [min(app.TimeEdges),max(app.TimeEdges)];
+ylim(app.TimeStatPlot,'auto');
+xticks(app.TimeStatPlot,'auto')
+yticks(app.TimeStatPlot,'auto')
+app.TimeStatPlot.Toolbar.Visible = 'off';
+app.TimeStatPlot.XGrid = app.XMajorMenu.Checked;
+app.TimeStatPlot.XMinorGrid = app.XMinorMenu.Checked;
+app.TimeStatPlot.YGrid = app.YMajorMenu.Checked;
+app.TimeStatPlot.YMinorGrid = app.YMinorMenu.Checked;
+
+% time vs. transit time
+app.TTTimePlot.XLim = [min(app.TimeEdges),max(app.TimeEdges)];
+ylim(app.TTTimePlot,'auto');
+xticks(app.TTTimePlot,'auto')
+yticks(app.TTTimePlot,'auto')
+app.TTTimePlot.Toolbar.Visible = 'off';
+app.TTTimePlot.XGrid = app.XMajorMenu.Checked;
+app.TTTimePlot.XMinorGrid = app.XMinorMenu.Checked;
+app.TTTimePlot.YGrid = app.YMajorMenu.Checked;
+app.TTTimePlot.YMinorGrid = app.YMinorMenu.Checked;
+
+% time vs. % CV
+app.CVTimePlot.XLim = [min(app.TimeEdges),max(app.TimeEdges)];
+ylim(app.CVTimePlot,'auto');
+xticks(app.CVTimePlot,'auto')
+yticks(app.CVTimePlot,'auto')
+app.CVTimePlot.Toolbar.Visible = 'off';
+app.CVTimePlot.XGrid = app.XMajorMenu.Checked;
+app.CVTimePlot.XMinorGrid = app.XMinorMenu.Checked;
+app.CVTimePlot.YGrid = app.YMajorMenu.Checked;
+app.CVTimePlot.YMinorGrid = app.YMinorMenu.Checked;
+
+% SN/TT vs. % diam
+app.S2NTT_Diam.XLim = [min(app.S2NTTEdges),max(app.S2NTTEdges)];
+ylim(app.S2NTT_Diam,'auto');
+xticks(app.S2NTT_Diam,'auto')
+yticks(app.S2NTT_Diam,'auto')
+app.S2NTT_Diam.Toolbar.Visible = 'off';
+app.S2NTT_Diam.XGrid = app.XMajorMenu.Checked;
+app.S2NTT_Diam.XMinorGrid = app.XMinorMenu.Checked;
+app.S2NTT_Diam.YGrid = app.YMajorMenu.Checked;
+app.S2NTT_Diam.YMinorGrid = app.YMinorMenu.Checked;
+
+%  diam hist
+app.DiamHist.XLim = [min(app.DiamEdges),max(app.DiamEdges)];
+ylim(app.DiamHist,'auto');
+xticks(app.DiamHist,'auto')
+yticks(app.DiamHist,'auto')
+app.DiamHist.Toolbar.Visible = 'off';
+app.DiamHist.XGrid = app.XMajorMenu.Checked;
+app.DiamHist.XMinorGrid = app.XMinorMenu.Checked;
+app.DiamHist.YGrid = app.YMajorMenu.Checked;
+app.DiamHist.YMinorGrid = app.YMinorMenu.Checked;
 end
