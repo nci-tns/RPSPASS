@@ -159,13 +159,14 @@ switch Data.RPSPASS.SpikeInUsed
         if ~strcmp(Report{FileID,'Diameter Calibration'},'Failed')
             Data.SpikeInGateMaxNorm = max(Data.SpikeInGateMax(~Data.RPSPASS.FailedAcq) .* Data.CaliFactor(~Data.RPSPASS.FailedAcq));
             Data.SpikeInGateMinNorm = min(Data.SpikeInGateMin(~Data.RPSPASS.FailedAcq) .* Data.CaliFactor(~Data.RPSPASS.FailedAcq));
+            Data.SpikeInInd = Data.diam >= Data.SpikeInGateMinNorm & Data.diam <= Data.SpikeInGateMaxNorm;
         else % if failed
             Data.SpikeInGateMaxNorm = [];
             Data.SpikeInGateMinNorm = [];
         end
 end
 
-Data.SpikeInInd = Data.diam >= Data.SpikeInGateMinNorm & Data.diam <= Data.SpikeInGateMaxNorm;
+
 
 % create raw indexing variables of processed data for downstream use and export
 Data.Indices.Events_OutlierRemoved = sum([~Data.outliers, ~Data.Indices.NoiseInd(:)],2) == 2;
@@ -189,6 +190,24 @@ switch Data.RPSPASS.SpikeInUsed
             Data.diam(:)>Data.Threshold.diam],2)==3;
 
         Data.Indices.Events_OutlierSpikeinRemovedDiamGate = and(Data.Indices.Events_OutlierRemovedDiamGate, ~Data.SpikeInInd(:));
+    otherwise
+
+        Data.Indices.Events_SpikeInRemoved = ~Data.Indices.NoiseInd(:);
+
+        Data.Indices.Events_OutlierSpikeinRemoved = sum([~Data.outliers, ~Data.Indices.NoiseInd(:)],2) == 2;
+        Data.Indices.SpikeIn_OutlierRemoved = sum([ ~Data.outliers, ~Data.Indices.NoiseInd(:)],2) == 2;
+
+        NoiseTTSN = Data.TT2SN > getprefRPSPASS('RPSPASS','CohortAnalysis_MinTTSN_Noise') ....
+            & Data.TT2SN < getprefRPSPASS('RPSPASS','CohortAnalysis_MinTTSN_Events') & ~Data.outliers;
+
+        Data.Threshold.diam = mean(Data.diam(NoiseTTSN))+(std(Data.diam(NoiseTTSN))*2);
+
+        Data.Indices.Events_OutlierRemovedDiamGate = sum([~Data.outliers(:),...
+            Data.TT2SN(:)>getprefRPSPASS('RPSPASS','CohortAnalysis_MinTTSN_Events'),...
+            Data.diam(:)>Data.Threshold.diam],2)==3;
+
+        Data.Indices.Events_OutlierSpikeinRemovedDiamGate = Data.Indices.Events_OutlierRemovedDiamGate;
+
 end
 
 

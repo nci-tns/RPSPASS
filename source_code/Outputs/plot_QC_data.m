@@ -138,15 +138,19 @@ nexttile(plotInd(4)+2,[plotheight,1])
 N = histcounts(Data.diam(ind), Bins.diam);
 plot(Bins.diamcent,N,'-k','LineWidth',2)
 hold on
-ind = Data.Indices.SpikeIn_OutlierRemoved;
-N = histcounts(Data.diam(ind), Bins.diam);
-N(N==0) = nan;
-plot(Bins.diamcent,N,'-r','LineWidth',2)
-xlabel('RPS_{PASS} Diameter (nm)')
-ylabel('Count')
-xlim([min(Bins.diam) max(Bins.diam)])
 
+switch Data.RPSPASS.SpikeInUsed
+    case 'Yes'
+        ind = Data.Indices.SpikeIn_OutlierRemoved;
+        N = histcounts(Data.diam(ind), Bins.diam);
+        N(N==0) = nan;
+        plot(Bins.diamcent,N,'-r','LineWidth',2)
+        xlabel('RPS_{PASS} Diameter (nm)')
+        ylabel('Count')
+        xlim([min(Bins.diam) max(Bins.diam)])
+end
 %% final resulting data
+
 switch type
     case 'cohort'
         ind = Data.Indices.Cohort_Events_OutliersSpikeinRemoved;

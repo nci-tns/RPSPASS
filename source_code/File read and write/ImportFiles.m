@@ -73,12 +73,12 @@ if ~isequal(filepath,0)
             % functions
             setprefRPSPASS('RPSPASS','CurrFile',Filenames{i})
 
-            
+
             % extract data from .h5 files for downstream processing
             [app,Data, Report] = ProcessH5File(app, filepath,Filenames{i}, Report, i, FileGroup);
-            
 
-            
+
+
             try % calibrate diameter
                 [Data, Report] = DiamCalibration(app, Data, i, Report);
             catch
@@ -98,16 +98,21 @@ if ~isequal(filepath,0)
             Debug_Plots(Data, 'OutlierRemoval')
 
             if ~strcmp(Report{i,'Diameter Calibration'},'Failed')  % if diameter calibration passed
-   
+
                 % create output plots for file
                 plot_QC_data(Data,'individual')
 
+    
                 % aggregate common LoDs for cohort gating
                 Threshold.Diam.Min(i) =  Data.Threshold.diam;
-                if isempty(Data.SpikeInGateMinNorm)
-                    Threshold.Diam.Max(i) =  max(Data.diam);
+                if isfield(Data,'SpikeInGateMinNorm')
+                    if isempty(Data.SpikeInGateMinNorm)
+                        Threshold.Diam.Max(i) =  max(Data.diam);
+                    else
+                        Threshold.Diam.Max(i) =  Data.SpikeInGateMinNorm;
+                    end
                 else
-                    Threshold.Diam.Max(i) =  Data.SpikeInGateMinNorm;
+                    Threshold.Diam.Max(i) =  max(Data.diam);
                 end
             else
                 FailedFiles = [FailedFiles, i];
@@ -130,63 +135,64 @@ if ~isequal(filepath,0)
             Threshold.Cohort.diam = [max(Threshold.Diam.Min) min(Threshold.Diam.Max)];
         end
         Threshold.Cohort.S2NTT = [getprefRPSPASS('RPSPASS','CohortAnalysis_MinTTSN_Events')];
-    end
 
-    %% process files for cohort analysis
-    for i = 1:FileNo
-        if ~sum(i == FailedFiles)
-            % load file from temporary directory
-            filename = ['Data_',num2str(i),'.mat'];
-            setprefRPSPASS('RPSPASS','CurrFile',Filenames{i})
-            Data = preferenceFolder_loadTempDir(filename);
 
-            % write cohort gating data to loaded Data file
-            if isfield(Threshold,'Cohort')
-                Data.Threshold.Cohort = Threshold.Cohort;
-                Data.Indices.Cohort_Events_OutliersSpikeinRemoved = Data.diam >= Threshold.Cohort.diam(1) & ...
-                    Data.diam <= Data.Threshold.Cohort.diam(2) & Data.TT2SN > Threshold.Cohort.S2NTT & ...
-                    Data.Indices.Events_OutlierRemoved;
+        %% process files for cohort analysis
+        for i = 1:FileNo
+            if ~sum(i == FailedFiles)
+                % load file from temporary directory
+                filename = ['Data_',num2str(i),'.mat'];
+                setprefRPSPASS('RPSPASS','CurrFile',Filenames{i})
+                Data = preferenceFolder_loadTempDir(filename);
+
+                % write cohort gating data to loaded Data file
+                if isfield(Threshold,'Cohort')
+                    Data.Threshold.Cohort = Threshold.Cohort;
+                    Data.Indices.Cohort_Events_OutliersSpikeinRemoved = Data.diam >= Threshold.Cohort.diam(1) & ...
+                        Data.diam <= Data.Threshold.Cohort.diam(2) & Data.TT2SN > Threshold.Cohort.S2NTT & ...
+                        Data.Indices.Events_OutlierRemoved;
+                end
+
+                % check if cohort analysis is turned on
+                switch CohortOutput
+                    case 'on'
+                        % apply gating and output plots
+                        plot_QC_data(Data,'cohort')
+
+                        % update html progress
+                        if isempty(mode)
+                            app.HTML.Data = [num2str(round(100*((i+FileNo)/(FileNo*figMultiplier)),0)),'%'];
+                        else
+                            app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*((i+FileNo)/(FileNo*figMultiplier)),1)),'%'];
+                        end
+                end
+                % collate report information
+                [Report, Set{i}] = createReport(i, Report, Data);
+
+                % export selected data files
+                Report = ExportDatafileTypes(i, Filenames{i}, Data, timestamp, Report);
+            else
+                % output plots that failed QC for inspection
+                plot_Failed_QC_data(Data,'failed')
             end
-
-            % check if cohort analysis is turned on
-            switch CohortOutput
-                case 'on'
-                    % apply gating and output plots
-                    plot_QC_data(Data,'cohort')
-
-                    % update html progress
-                    if isempty(mode)
-                        app.HTML.Data = [num2str(round(100*((i+FileNo)/(FileNo*figMultiplier)),0)),'%'];
-                    else
-                        app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*((i+FileNo)/(FileNo*figMultiplier)),1)),'%'];
-                    end
-            end
-            % collate report information
-            [Report, Set{i}] = createReport(i, Report, Data);
-
-            % export selected data files
-            Report = ExportDatafileTypes(i, Filenames{i}, Data, timestamp, Report);
-        else
-            % output plots that failed QC for inspection
-            plot_Failed_QC_data(Data,'failed')
         end
+
+        % check if cohort analysis is turned on
+        switch CohortOutput
+            case 'on'
+                Cohort_Comparison(app, Set, Filenames)
+        end
+
+        % export report
+        outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],[timestamp_filename,' RPSPASS Report.xlsx']);
+        writeReport(TableHeaders, Report, outputPath,Data)
+
+        % open folder containing outputs
+        if ismac()
+            system(['open ''',fullfile(filepath,['RPSPASS ', timestamp_filename]),'''']);
+        end
+
     end
-
-    % check if cohort analysis is turned on
-    switch CohortOutput
-        case 'on'
-            Cohort_Comparison(app, Set, Filenames)
-    end
-
-    % export report
-    outputPath = fullfile(filepath,['RPSPASS ', timestamp_filename],[timestamp_filename,' RPSPASS Report.xlsx']);
-    writeReport(TableHeaders, Report, outputPath,Data)
-
-    % open folder containing outputs
-    if ismac()
-        system(['open ''',fullfile(filepath,['RPSPASS ', timestamp_filename]),'''']);
-    end
-
     % clear temporary file cache
     preferenceFolder_createTempDir()
 else
