@@ -47,6 +47,7 @@ for i = 1:size(fnames,1)
         data = h5read(fullfile(filepath, filenames), readstr);
     end
 
+    % if the instrument is the Arc
     if isfield(data,'fl1_size')
         Data.FL1 = [Data.FL1; data.fl1_size];
         Data.FL2 = [Data.FL2; data.fl2_size];

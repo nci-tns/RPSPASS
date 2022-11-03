@@ -21,6 +21,12 @@ Data.SetPs = [];
 Data.time = [];
 Data.cumvol = [];
 
+% Arc variables
+Data.FL1 = [];
+Data.FL2 = [];
+Data.FL3 = [];
+
+
 % keep track of successfully processed files for indexing
 ii = 0;
 
@@ -46,6 +52,13 @@ for i = 1:size(fnames,1)
         data = h5read(fullfile(filepath, filenames), readstr);
     end
 
+        % if the instrument is the Arc
+    if isfield(data,'fl1_size')
+        Data.FL1 = [Data.FL1; data.fl1_size];
+        Data.FL2 = [Data.FL2; data.fl2_size];
+        Data.FL3 = [Data.FL3; data.fl3_size];
+    end
+    
     if ~isempty(data.pk_sym) % ignore failed acquisitions
         ii = ii + 1; % update successful data import
 
