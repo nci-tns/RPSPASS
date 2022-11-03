@@ -38,10 +38,10 @@ switch Selection
             end
         end
         SelectedData = Data.time;
-        Bin = app.TimeEdges;
+        Bin = linspace(min(app.TimeEdges), app.TimeMax, app.Resolution);
         Scale = 'linear';
         Label = 'Time (secs)';
-        Lims = [min(app.TimeEdges),max(app.TimeEdges)];
+        Lims = [min(app.TimeEdges), app.TimeMax];
     case 'FL1'
         SelectedData = Data.FL1;
         Bin = logspace(-3,1,app.Resolution);

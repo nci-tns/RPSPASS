@@ -142,7 +142,7 @@ end
 if ~isempty(Data.FL1)
     AxisSelection = {'Diameter','S2N/TT','Transit Time','Time','FL1','FL2','FL3'};
 else
-    AxisSelection = {'Diameter','S2N/TT','Transit Time'};
+    AxisSelection = {'Diameter','S2N/TT','Transit Time','Time'};
 end
 
 
