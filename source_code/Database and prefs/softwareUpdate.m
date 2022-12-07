@@ -2,7 +2,7 @@ function [] = softwareUpdate(app)
 
 % obtained current release of the software
 try
-software = jsondecode(webread('http://joshuawelsh.co.uk/softwareupdate'));
+software = jsondecode(webread('https://raw.githubusercontent.com/joadwe/softwareupdate/master/database/database.json'));
 
 ReleaseV = software.RPSPASS.version; % current software release
 UserV = app.Version; % currently installed software version
