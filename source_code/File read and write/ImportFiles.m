@@ -80,29 +80,31 @@ if ~isequal(filepath,0)
 
 
             try % calibrate diameter
-                [Data, Report] = DiamCalibration(app, Data, i, Report);
+                [Data, Report, Stat] = DiamCalibration(app, Data, i, Report);
             catch
                 Report(i,'Diameter Calibration') = {'Failed'};
             end
 
 
-            %             try % remove outliers
-            [Data,Report] = OutlierRemoval(Data, Report, i);
-            %                 Report(i,'Outlier Removal') = {'Passed'};
-            %             catch
-            %                 Report(i,'Outlier Removal') = {'Failed'};
-            %             end
 
 
-            % output outlier removal debug plots
-            Debug_Plots(Data, 'OutlierRemoval')
+            if ~contains(Report{i,'Diameter Calibration'},'Failed')  % if diameter calibration passed
 
-            if ~strcmp(Report{i,'Diameter Calibration'},'Failed')  % if diameter calibration passed
+                try % remove outliers
+                    [Data,Report] = OutlierRemoval(Data, Report, i);
+                    Report(i,'Outlier Removal') = {'Passed'};
+                catch
+                    Report(i,'Outlier Removal') = {'Failed'};
+                end
+
+
+                % output outlier removal debug plots
+                Debug_Plots(Data, 'OutlierRemoval')
 
                 % create output plots for file
                 plot_QC_data(Data,'individual')
 
-    
+
                 % aggregate common LoDs for cohort gating
                 Threshold.Diam.Min(i) =  Data.Threshold.diam;
                 if isfield(Data,'SpikeInGateMinNorm')
@@ -115,6 +117,9 @@ if ~isequal(filepath,0)
                     Threshold.Diam.Max(i) =  max(Data.diam);
                 end
             else
+                Report(i,'Outlier Removal') = {'Failed: Too few spike-in events detected'};
+                Data.outliers = false(size(Data.AcqID)); % save per event failed acquisitions
+                Data.Indices.NotOutliers = true(size(Data.AcqID)); % save per event passed acquisitions
                 FailedFiles = [FailedFiles, i];
             end
 
@@ -128,6 +133,7 @@ if ~isequal(filepath,0)
             else
                 app.HTML.Data = [num2str(round(100*(mode(1)/mode(2))*(i/(FileNo*figMultiplier)),1)),'%'];
             end
+
         end
 
         % check threshold diameters exist and find maximum for cohort gate
@@ -173,7 +179,7 @@ if ~isequal(filepath,0)
                 Report = ExportDatafileTypes(i, Filenames{i}, Data, timestamp, Report);
             else
                 % output plots that failed QC for inspection
-                plot_Failed_QC_data(Data,'failed')
+                plot_QC_data(Data,'failed')
             end
         end
 

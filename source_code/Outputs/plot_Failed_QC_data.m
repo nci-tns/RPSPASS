@@ -1,4 +1,4 @@
-function [] = plot_QC_data(Data)
+function [] = plot_Failed_QC_data(Data)
 
 % create default plot properties
 res = 256;

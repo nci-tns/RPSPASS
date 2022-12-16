@@ -1,4 +1,4 @@
-function [Data, Report] = DiamCalibration(app,Data, FileID, Report)
+function [Data, Report, Stat] = DiamCalibration(app,Data, FileID, Report)
 
 switch getprefRPSPASS('RPSPASS','diamcalitypeSelected')
 

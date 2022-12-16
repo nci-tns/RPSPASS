@@ -26,7 +26,6 @@ switch getprefRPSPASS('RPSPASS','outlierremovalSelected')
                 end
         end
 
-
         for i = 1:Data.RPSPASS.MaxInt
             % isolate data for acquisition
             timgate = Data.time >= Data.RPSPASS.AcqInt(i) & Data.time < Data.RPSPASS.AcqInt(i+1);
