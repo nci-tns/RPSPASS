@@ -150,8 +150,10 @@ if ~isempty(plots)
     hold(app.TimeStatPlot,'off')
 end
 
+[~, TimeBins] = getAxisParameter(app, 'Time', Data);
+
 % time vs. stat
-app.TimeStatPlot.XLim = [min(app.TimeEdges),max(app.TimeEdges)];
+app.TimeStatPlot.XLim = [min(TimeBins),max(TimeBins)];
 ylim(app.TimeStatPlot,'auto');
 xticks(app.TimeStatPlot,'auto')
 yticks(app.TimeStatPlot,'auto')
@@ -162,7 +164,7 @@ app.TimeStatPlot.YGrid = app.YMajorMenu.Checked;
 app.TimeStatPlot.YMinorGrid = app.YMinorMenu.Checked;
 
 % time vs. transit time
-app.TTTimePlot.XLim = [min(app.TimeEdges),max(app.TimeEdges)];
+app.TTTimePlot.XLim =  [min(TimeBins),max(TimeBins)];
 ylim(app.TTTimePlot,'auto');
 xticks(app.TTTimePlot,'auto')
 yticks(app.TTTimePlot,'auto')
@@ -173,7 +175,7 @@ app.TTTimePlot.YGrid = app.YMajorMenu.Checked;
 app.TTTimePlot.YMinorGrid = app.YMinorMenu.Checked;
 
 % time vs. % CV
-app.CVTimePlot.XLim = [min(app.TimeEdges),max(app.TimeEdges)];
+app.CVTimePlot.XLim =  [min(TimeBins),max(TimeBins)];
 ylim(app.CVTimePlot,'auto');
 xticks(app.CVTimePlot,'auto')
 yticks(app.CVTimePlot,'auto')
@@ -184,7 +186,7 @@ app.CVTimePlot.YGrid = app.YMajorMenu.Checked;
 app.CVTimePlot.YMinorGrid = app.YMinorMenu.Checked;
 
 % SN/TT vs. % diam
-app.S2NTT_Diam.XLim = [min(app.S2NTTEdges),max(app.S2NTTEdges)];
+app.S2NTT_Diam.XLim = [min(TimeBins),max(TimeBins)];
 ylim(app.S2NTT_Diam,'auto');
 xticks(app.S2NTT_Diam,'auto')
 yticks(app.S2NTT_Diam,'auto')
