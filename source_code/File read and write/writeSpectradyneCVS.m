@@ -61,4 +61,25 @@ if ismac()
 elseif ispc()
     writecell(metadata,filename,'Sheet','Metadata','UseExcel',true,'FileType','spreadsheet')
 end
+
+% convert structure array to table
+indexdata2write = struct2table(Data.Indices);
+
+% field names for indices
+indexFieldnames = fieldnames(Data.Indices);
+indexHeadersRm = {'NotNoise','NotOutliers','Unprocessed'};
+
+% create indices output
+indexdata = cell(size(indexdata2write,1)+1, size(indexdata2write,2));
+indexdata(2:end,:) = table2cell(indexdata2write);
+indexdata(:,contains(indexFieldnames,indexHeadersRm)) = [];
+indexdata(1,:) = indexFieldnames(~contains(indexFieldnames,indexHeadersRm));
+
+% export report to excel spreadsheet
+if ismac()
+    writecell(indexdata,filename,'Sheet','Index Data','UseExcel',false,'FileType','spreadsheet')
+elseif ispc()
+    writecell(indexdata,filename,'Sheet','Index Data','UseExcel',true,'FileType','spreadsheet')
+end
+
 end

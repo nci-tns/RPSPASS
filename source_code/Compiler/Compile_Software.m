@@ -1,7 +1,7 @@
 clear; clc
 
 % Updates made between versions
-ver = '1.0.1.0';
+ver = '1.0.2.0';
 MasterFile = 'GUI_Master.mlapp';
 
 path = strsplit((which(MasterFile)),filesep);
@@ -12,7 +12,7 @@ ProjPath = fullfile(path{~EmptyPath(1:end-2)});
 % OS spectific
 if ismac()
     installDir = '/Applications/RPSPASS';
-    outputDir = ['/Users/welshjoa/Library/CloudStorage/OneDrive-SharedLibraries-NationalInstitutesofHealth/CCR-Translational-Nanobiology - Software/RPSPASS/Compiled/Mac/',ver];
+    outputDir = ['/Users/welshjoa/Documents/Compiled/RPSPASS/Compiled/Mac/',ver];
     intallerName = 'RPSPASS_Installer_Mac';
     SourcePath = [filesep,SourcePath];
     ProjPath = [filesep,ProjPath];
