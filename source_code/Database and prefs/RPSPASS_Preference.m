@@ -15,7 +15,10 @@ end
 
 % prefFile = fullfile(prefpath, [PrefType, '_Pref.rpspass']);
 
+% check all required toolboxes exist
+check_toolboxes()
 
+% update preferences
 PrefVersionUpdate(app.Version, prefpath)
 
 

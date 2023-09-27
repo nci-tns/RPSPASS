@@ -59,7 +59,7 @@ else
             if ismac()
                 input =['curl ',getprefRPSPASS('RPSPASS','dev_file_download'),' --output ','''',fullfile(path,filename),''''];
             elseif ispc()
-                input =['curl ',getprefRPSPASS('RPSPASS','dev_file_download'),' --output ',fullfile(path,filename),''];
+                 input =['curl ',getprefRPSPASS('RPSPASS','dev_file_download'),' > ','"',fullfile(path,filename),'"'];
             end
 
             system(input);

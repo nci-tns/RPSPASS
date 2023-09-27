@@ -1,5 +1,8 @@
 clear; clc
 
+% check all required toolboxes exist
+check_toolboxes()
+
 % Updates made between versions
 ver = '1.0.2.0';
 MasterFile = 'GUI_Master.mlapp';
@@ -12,14 +15,16 @@ ProjPath = fullfile(path{~EmptyPath(1:end-2)});
 % OS spectific
 if ismac()
     installDir = '/Applications/RPSPASS';
-    outputDir = ['/Users/welshjoa/Documents/Compiled/RPSPASS/Compiled/Mac/',ver];
-    intallerName = 'RPSPASS_Installer_Mac';
+    outputDir = ['/Installation File/Mac/',ver];
+    installerName = 'RPSPASS_Installer_Mac';
+    installerExtension = '.app';
     SourcePath = [filesep,SourcePath];
     ProjPath = [filesep,ProjPath];
 elseif ispc()
     installDir = 'C:\Program Files\RPSPASS';
-    outputDir = ['C:\Users\welshjoa\Documents\MATLAB\RPSPASS\Compiled\',ver];
-    intallerName = 'RPSPASS_Installer_PC';
+    outputDir = ['Installation File\Windows\',ver];
+    installerName = 'RPSPASS_Installer_PC';
+    installerExtension = '.exe';
 end
 
 % get non-MATLAB file dependancies
@@ -63,7 +68,7 @@ Inst.opts.Description = '';
 Inst.opts.InstallationNotes = '';
 Inst.opts.Shortcut = '';
 Inst.opts.Version = ver;
-Inst.opts.InstallerName = intallerName;
+Inst.opts.InstallerName = installerName;
 Inst.opts.ApplicationName = 'RPSPASS';
 Inst.opts.OutputDir = fullfile(outputDir,'Installer');
 Inst.opts.DefaultInstallationDir = installDir;
@@ -72,6 +77,13 @@ Files = [App.results.Files(:); fullfile(ProjPath,'LICENSE')];
 
 % create installation compiler
 compiler.package.installer(Files,App.runtimeProducts,'Options',Inst.opts);
+
+% remove the application folder
+rmdir(App.results.Options.OutputDir,'s')
+
+% zip installation file and remove unzipped file
+zip(fullfile(outputDir,'Installer',installerName),fullfile(outputDir,'Installer',[installerName,installerExtension]))
+delete(fullfile(outputDir,'Installer',[installerName,installerExtension]))
 
 function [FileDep] = getFileDependencies(SourcePath)
 
