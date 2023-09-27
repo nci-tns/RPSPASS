@@ -15,7 +15,7 @@ ProjPath = fullfile(path{~EmptyPath(1:end-2)});
 % OS spectific
 if ismac()
     installDir = '/Applications/RPSPASS';
-    outputDir = ['/Installation File/Mac/',ver];
+    outputDir = ['Installation File/Mac/',ver];
     installerName = 'RPSPASS_Installer_Mac';
     installerExtension = '.app';
     SourcePath = [filesep,SourcePath];
