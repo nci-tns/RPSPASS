@@ -83,7 +83,11 @@ rmdir(App.results.Options.OutputDir,'s')
 
 % zip installation file and remove unzipped file
 zip(fullfile(outputDir,'Installer',installerName),fullfile(outputDir,'Installer',[installerName,installerExtension]))
-delete(fullfile(outputDir,'Installer',[installerName,installerExtension]))
+if ismac()
+    rmdir(fullfile(outputDir,'Installer',[installerName,installerExtension]),'s')
+elseif ispc()
+    delete(fullfile(outputDir,'Installer',[installerName,installerExtension]))
+end
 
 function [FileDep] = getFileDependencies(SourcePath)
 
