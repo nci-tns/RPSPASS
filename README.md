@@ -3,14 +3,12 @@
 This software is designed to allow the analysis of extracellular vesicle microfluidic resistive pulse sensing data. Full documentation and protocols can be found at: https://nano.ccr.cancer.gov/rpspass/.
 
 ## Standalone software
-The latest installation files for Mac and PC platforms can be found in this repository [here](https://github.com/nci-tns/RPSPASS/tree/main/Installation%20File)
+A fully compiled version of the software for Windows and Mac can be found in this repository [here](https://github.com/nci-tns/RPSPASS/tree/main/Installation%20File)
 
 ## Getting Started
 Protocols for using the software can be found at https://nano.ccr.cancer.gov/protocols
 
 ## Prerequisites for code in MATLAB
-
-A fully compiled version of the software with no dependencies can be found at: https://nano.ccr.cancer.gov/mpapass
 
 Source code dependencies:
 * MATLAB
